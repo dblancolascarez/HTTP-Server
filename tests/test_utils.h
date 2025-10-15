@@ -1,0 +1,1 @@
+// Macros y helpers para testing

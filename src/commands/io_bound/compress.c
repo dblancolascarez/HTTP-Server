@@ -1,0 +1,1 @@
+// Comprimir archivos (gzip/xz)

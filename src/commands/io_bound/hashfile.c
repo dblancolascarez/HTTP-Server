@@ -1,0 +1,1 @@
+// Hash SHA-256 de archivos

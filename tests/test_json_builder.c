@@ -1,0 +1,1 @@
+// Tests de construcción JSON

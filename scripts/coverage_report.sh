@@ -1,0 +1,1 @@
+# Generar reporte gcov detallado

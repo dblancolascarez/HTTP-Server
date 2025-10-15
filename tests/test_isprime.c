@@ -1,0 +1,1 @@
+// Tests de lógica de primalidad
