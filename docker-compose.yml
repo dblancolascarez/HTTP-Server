@@ -1,0 +1,14 @@
+services:
+  http-server:
+    build: .
+    container_name: http-server-dev
+    volumes:
+      - .:/app
+      - build-data:/app/build
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+volumes:
+  build-data:
