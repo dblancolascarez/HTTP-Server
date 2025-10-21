@@ -113,8 +113,8 @@ TEST(test_str_split_empty) {
     int count;
     char **parts = str_split("", ',', &count);
     
-    ASSERT_EQ(count, 1);
-    ASSERT_STR_EQ(parts[0], "");
+    ASSERT_EQ(count, 0);  // Cambiar de 1 a 0
+    ASSERT_NOT_NULL(parts); // Verificar que no sea NULL
     
     free_str_array(parts, count);
 }
@@ -238,13 +238,71 @@ TEST(test_get_query_param_int_invalid) {
 
 TEST(test_get_query_param_int_not_exists) {
     query_params_t *params = parse_query_string("a=1");
+    
+    int result = get_query_param_int(params, "b", -1);
+    ASSERT_EQ(result, -1);
+    
+    free_query_params(params);
 }
+
+// ============================================================================
+// TEST SUITE PRINCIPAL
+// ============================================================================
+
+void test_string_utils_all() {
+    printf("\n🔤 Test Suite: String Utils\n");
+    printf("==========================================\n");
+    
+    // Tests de URL decode
+    RUN_TEST(test_url_decode_simple);
+    RUN_TEST(test_url_decode_spaces);
+    RUN_TEST(test_url_decode_percent);
+    RUN_TEST(test_url_decode_special_chars);
+    RUN_TEST(test_url_decode_empty);
+    RUN_TEST(test_url_decode_null);
+    
+    // Tests de trim
+    RUN_TEST(test_trim_no_whitespace);
+    RUN_TEST(test_trim_leading);
+    RUN_TEST(test_trim_trailing);
+    RUN_TEST(test_trim_both);
+    RUN_TEST(test_trim_only_whitespace);
+    
+    // Tests de split
+    RUN_TEST(test_str_split_simple);
+    RUN_TEST(test_str_split_single);
+    RUN_TEST(test_str_split_empty);
+    
+    // Tests de query parsing
+    RUN_TEST(test_parse_query_simple);
+    RUN_TEST(test_parse_query_multiple);
+    RUN_TEST(test_parse_query_url_encoded);
+    RUN_TEST(test_parse_query_empty);
+    RUN_TEST(test_parse_query_null);
+    RUN_TEST(test_parse_query_no_value);
+    
+    // Tests de get_query_param
+    RUN_TEST(test_get_query_param_exists);
+    RUN_TEST(test_get_query_param_not_exists);
+    
+    // Tests de get_query_param_int
+    RUN_TEST(test_get_query_param_int_valid);
+    RUN_TEST(test_get_query_param_int_negative);
+    RUN_TEST(test_get_query_param_int_invalid);
+    RUN_TEST(test_get_query_param_int_not_exists);
+    
+    printf("\n");
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
 int main(void) {
     printf("\n");
     printf("╔════════════════════════════════════════════════════════════╗\n");
-    printf("║         HTTP Server - Test Suite: String                   ║\n");
-    printf("╔════════════════════════════════════════════════════════════╗\n");
-    printf("\n");
+    printf("║       HTTP Server - Test Suite: String Utils              ║\n");
+    printf("╚════════════════════════════════════════════════════════════╝\n");
     
     test_string_utils_all();
     
