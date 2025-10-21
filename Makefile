@@ -29,6 +29,12 @@ UTILS_SRC = $(SRC_DIR)/utils/logger.c \
 # Core (Queue)
 CORE_SRC = $(SRC_DIR)/core/queue.c
 
+# Worker pool
+WORKER_POOL_SRC = $(SRC_DIR)/core/worker_pool.c
+
+# Test para worker pool
+TEST_WORKER_POOL_SRC = $(TEST_DIR)/test_worker_pool.c
+
 # Todos los sources (sin main.c por ahora)
 ALL_SRC = $(UTILS_SRC) $(CORE_SRC)
 
@@ -90,6 +96,19 @@ test_string: $(BUILD_DIR)/test_string_utils
 		exit 1; \
 	fi
 
+test_worker_pool: $(BUILD_DIR)/test_worker_pool
+	@echo ""
+	@echo "$(GREEN)=========================================$(NC)"
+	@echo "$(GREEN)  Ejecutando Tests de Worker Pool$(NC)"
+	@echo "$(GREEN)=========================================$(NC)"
+	@./$(BUILD_DIR)/test_worker_pool
+	@if [ $$? -eq 0 ]; then \
+		echo "$(GREEN)✅ Tests de Worker Pool: PASSED$(NC)"; \
+	else \
+		echo "$(RED)❌ Tests de Worker Pool: FAILED$(NC)"; \
+		exit 1; \
+	fi
+
 # ============================================================================
 # COMPILACIÓN DE TESTS
 # ============================================================================
@@ -104,11 +123,16 @@ $(BUILD_DIR)/test_string_utils: $(TEST_STRING_SRC) $(UTILS_SRC)
 	@echo "Compilando test_string_utils..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
 
+$(BUILD_DIR)/test_worker_pool: $(TEST_WORKER_POOL_SRC) $(WORKER_POOL_SRC) $(CORE_SRC) $(UTILS_SRC)
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compilando test_worker_pool..."
+	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
+
 # ============================================================================
 # EJECUTAR TODOS LOS TESTS
 # ============================================================================
 
-test: test_string test_queue
+test: test_string test_queue test_worker_pool
 	@echo ""
 	@echo "$(GREEN)=========================================$(NC)"
 	@echo "$(GREEN)  🎉 TODOS LOS TESTS PASARON$(NC)"
