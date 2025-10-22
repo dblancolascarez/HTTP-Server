@@ -44,6 +44,7 @@ ALL_SRC = $(UTILS_SRC) $(CORE_SRC)
 
 TEST_QUEUE_SRC = $(TEST_DIR)/test_queue.c
 TEST_STRING_SRC = $(TEST_DIR)/test_string_utils.c
+TEST_JOB_MANAGER_SRC = $(TEST_DIR)/test_job_manager.c
 
 # ============================================================================
 # TARGETS PRINCIPALES
@@ -109,6 +110,19 @@ test_worker_pool: $(BUILD_DIR)/test_worker_pool
 		exit 1; \
 	fi
 
+test_job_manager: $(BUILD_DIR)/test_job_manager
+	@echo ""
+	@echo "$(GREEN)=========================================$(NC)"
+	@echo "$(GREEN)  Ejecutando Tests de Job Manager$(NC)"
+	@echo "$(GREEN)=========================================$(NC)"
+	@./$(BUILD_DIR)/test_job_manager
+	@if [ $$? -eq 0 ]; then \
+		echo "$(GREEN)✅ Tests de Job Manager: PASSED$(NC)"; \
+	else \
+		echo "$(RED)❌ Tests de Job Manager: FAILED$(NC)"; \
+		exit 1; \
+	fi
+
 # ============================================================================
 # COMPILACIÓN DE TESTS
 # ============================================================================
@@ -128,11 +142,16 @@ $(BUILD_DIR)/test_worker_pool: $(TEST_WORKER_POOL_SRC) $(WORKER_POOL_SRC) $(CORE
 	@echo "Compilando test_worker_pool..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
 
+$(BUILD_DIR)/test_job_manager: $(TEST_JOB_MANAGER_SRC) $(CORE_SRC) $(UTILS_SRC) $(SRC_DIR)/core/job_manager.c
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compilando test_job_manager..."
+	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
+
 # ============================================================================
 # EJECUTAR TODOS LOS TESTS
 # ============================================================================
 
-test: test_string test_queue test_worker_pool
+test: test_string test_queue test_worker_pool test_job_manager
 	@echo ""
 	@echo "$(GREEN)=========================================$(NC)"
 	@echo "$(GREEN)  🎉 TODOS LOS TESTS PASARON$(NC)"

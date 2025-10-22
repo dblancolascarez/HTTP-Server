@@ -34,6 +34,8 @@ make test_queue
 make test_string
 make test
 make coverage
+make test_job_manager
+make test_worker_pool
 ```
 
 ## 📊 Salida Esperada
