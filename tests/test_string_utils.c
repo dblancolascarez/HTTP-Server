@@ -245,6 +245,22 @@ TEST(test_get_query_param_int_not_exists) {
     free_query_params(params);
 }
 
+TEST(test_get_query_param_long_valid) {
+    query_params_t *params = parse_query_string("big=9999999999");
+    
+    ASSERT_EQ(get_query_param_long(params, "big", -1), 9999999999L);
+    
+    free_query_params(params);
+}
+
+TEST(test_get_query_param_long_not_exists) {
+    query_params_t *params = parse_query_string("a=1");
+    
+    ASSERT_EQ(get_query_param_long(params, "nothere", 123456L), 123456L);
+    
+    free_query_params(params);
+}
+
 // ============================================================================
 // TEST SUITE PRINCIPAL
 // ============================================================================
@@ -290,6 +306,10 @@ void test_string_utils_all() {
     RUN_TEST(test_get_query_param_int_negative);
     RUN_TEST(test_get_query_param_int_invalid);
     RUN_TEST(test_get_query_param_int_not_exists);
+
+    // Tests de get query param long
+    RUN_TEST(test_get_query_param_long_valid);
+    RUN_TEST(test_get_query_param_long_not_exists);
     
     printf("\n");
 }

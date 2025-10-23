@@ -3,7 +3,8 @@
 
 // Declarar las funciones de test suites
 void test_queue_all();
-// void test_string_utils_all();  // Descomentar cuando esté listo
+void test_string_utils_all(); 
+void test_http_parser_all();
 
 int main(int argc, char *argv[]) {
     (void)argc;
@@ -19,7 +20,8 @@ int main(int argc, char *argv[]) {
     
     // Ejecutar test suites
     test_queue_all();
-    // test_string_utils_all();  // Descomentar cuando esté listo
+    test_string_utils_all();
+    test_http_parser_all();
     
     // Imprimir resumen
     print_test_summary();
