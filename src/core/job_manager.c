@@ -90,7 +90,7 @@ void job_manager_shutdown() {
     pthread_mutex_unlock(&jobs_mutex);
 }
 
-char* job_submit(const char *task_name, const char *payload_json, int priority_ms_timeout) {
+char* job_submit(const char *task_name, const char *payload_json, int priority_ms_timeout __attribute__((unused))) {
     char idbuf[128];
     generate_request_id(idbuf, sizeof(idbuf));
 

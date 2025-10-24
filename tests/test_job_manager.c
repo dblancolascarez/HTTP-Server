@@ -71,3 +71,17 @@ TEST(test_job_cancel) {
 
 	free(job_id);
 }
+
+void run_all_tests() {
+    RUN_TEST(test_job_submit_and_status);
+    RUN_TEST(test_job_mark_running_and_done);
+    RUN_TEST(test_job_mark_error_and_get_result);
+    RUN_TEST(test_job_cancel);
+}
+
+int main() {
+    reset_test_counters();
+    run_all_tests();
+    print_test_summary();
+    return get_test_failures() ? 1 : 0;
+}
