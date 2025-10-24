@@ -26,6 +26,9 @@ UTILS_SRC = $(SRC_DIR)/utils/logger.c \
             $(SRC_DIR)/utils/timer.c \
             $(SRC_DIR)/utils/uuid.c
 
+# Basic Commands
+BASIC_COMMANDS_SRC = $(SRC_DIR)/commands/basic/reverse.c
+
 # Core (Queue)
 CORE_SRC = $(SRC_DIR)/core/queue.c \
 		   $(SRC_DIR)/core/worker_pool.c \
@@ -37,7 +40,7 @@ SERVER_SRC = $(SRC_DIR)/server/http.c \
 			 $(SRC_DIR)/router/router.c
 
 # Todos los sources (sin main.c por ahora)
-ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC)
+ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC) $(BASIC_COMMANDS_SRC)
 
 # Main
 MAIN_SRC = $(SRC_DIR)/main.c

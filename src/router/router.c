@@ -2,6 +2,7 @@
 #include "router.h"
 #include "../core/job_manager.h"
 #include "../utils/utils.h"
+#include "../commands/basic/reverse.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,18 +102,20 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
     // Handlers simples: /reverse, /toupper, /timestamp
     if (strcmp(req->path, "/reverse") == 0) {
         const char *text = get_query_param(qp, "text");
-        if (!text) { free_query_params(qp); return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'text' parameter", request_id); }
-        char *decoded = url_decode(text);
-        size_t L = decoded ? strlen(decoded) : 0;
-        char *out = malloc(L + 1 + 1);
-        if (out) {
-            for (size_t i = 0; i < L; i++) out[i] = decoded[L - 1 - i];
-            out[L] = '\0';
+        if (!text) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'text' parameter", request_id); 
         }
-        char json[1024];
-        snprintf(json, sizeof(json), "{\"input\":\"%s\",\"output\":\"%s\"}", decoded ? decoded : "", out ? out : "");
+        
+        char *json = handle_reverse(text);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
         ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
-        free(decoded); free(out); free_query_params(qp);
+        free(json);
+        free_query_params(qp);
         return sent;
     }
 
