@@ -7,6 +7,24 @@
 #include <unistd.h>
 #include <ctype.h>
 
+// Helper: ensure all bytes are written to the socket (handle partial writes)
+static ssize_t write_all(int fd, const void *buf, size_t len) {
+    const char *p = buf;
+    size_t remaining = len;
+    while (remaining > 0) {
+        ssize_t w = write(fd, p, remaining);
+        if (w < 0) {
+            return -1;
+        }
+        if (w == 0) {
+            return -1;
+        }
+        p += w;
+        remaining -= (size_t)w;
+    }
+    return (ssize_t)len;
+}
+
 // ============================================================================
 // HTTP PARSING
 // ============================================================================
@@ -211,21 +229,21 @@ int http_send_response(int client_fd, const http_response_t *response) {
                           sizeof(header_buffer) - header_len,
                           "\r\n");
     
-    // Enviar headers
-    ssize_t sent = write(client_fd, header_buffer, header_len);
+    // Enviar headers (asegurando escrituras completas)
+    ssize_t sent = write_all(client_fd, header_buffer, (size_t)header_len);
     if (sent < 0) {
         return -1;
     }
-    
+
     // Enviar body si existe
     if (response->body && body_len > 0) {
-        sent = write(client_fd, response->body, body_len);
-        if (sent < 0) {
+        ssize_t body_sent = write_all(client_fd, response->body, body_len);
+        if (body_sent < 0) {
             return -1;
         }
-        return header_len + sent;
+        return header_len + body_sent;
     }
-    
+
     return header_len;
 }
 

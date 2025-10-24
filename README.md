@@ -43,6 +43,24 @@ make run
 # 6. En otra terminal, probar con curl
 curl http://localhost:8080/status
 curl http://localhost:8080/help
+
+Tambien se puede probar 
+
+status
+curl -i 'http://127.0.0.1:8080/status'
+
+reverse
+curl -i 'http://127.0.0.1:8080/reverse?text=abcdef'
+
+toupper (percent-encoded space)
+curl -i 'http://127.0.0.1:8080/toupper?text=hola%20mundo'
+
+timestamp
+curl -i 'http://127.0.0.1:8080/timestamp'
+
+submit job (example)
+curl -i 'http://127.0.0.1:8080/jobs/submit?task=isprime&n=97'
+
 ```
 
 ### Salida Esperada del Servidor

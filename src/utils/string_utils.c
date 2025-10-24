@@ -90,12 +90,14 @@ char** str_split(const char *str, char delimiter, int *count) {
     
     // Copiar y separar
     char *copy = strdup(str);
-    char *token = strtok(copy, &delimiter);
+    // strtok expects a NUL-terminated string of delimiters
+    char delim_str[2]; delim_str[0] = delimiter; delim_str[1] = '\0';
+    char *token = strtok(copy, delim_str);
     int i = 0;
     
     while (token && i < *count) {
         result[i++] = strdup(token);
-        token = strtok(NULL, &delimiter);
+        token = strtok(NULL, delim_str);
     }
     
     free(copy);

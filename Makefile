@@ -28,11 +28,13 @@ UTILS_SRC = $(SRC_DIR)/utils/logger.c \
 
 # Core (Queue)
 CORE_SRC = $(SRC_DIR)/core/queue.c \
-		   $(SRC_DIR)/core/worker_pool.c
+		   $(SRC_DIR)/core/worker_pool.c \
+		   $(SRC_DIR)/core/job_manager.c
 
 # Server (HTTP + TCP)
 SERVER_SRC = $(SRC_DIR)/server/http.c \
-             $(SRC_DIR)/server/server.c
+			 $(SRC_DIR)/server/server.c \
+			 $(SRC_DIR)/router/router.c
 
 # Todos los sources (sin main.c por ahora)
 ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC)

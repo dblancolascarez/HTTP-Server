@@ -2,6 +2,7 @@
 #include "server.h"
 #include "http.h"
 #include "../utils/utils.h"
+#include "../router/router.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -258,62 +259,22 @@ void* connection_handler(void *arg) {
              request_id);
     
     // ========================================================================
-    // FASE 4: AQUÍ SE DELEGARÁ AL ROUTER
-    // Por ahora, respuesta simple para todos los paths
+    // FASE 4: Delegar al router
+    // El router se encarga de validar parámetros y de enviar la respuesta
     // ========================================================================
-    
-    // Respuesta temporal (será reemplazada por el router)
-    char json_response[512];
-    
-    if (strcmp(http_req.path, "/status") == 0) {
-        // Endpoint de status básico
-        long uptime = server_get_uptime(server);
-        
-        server_stats_t stats;
-        server_get_stats(server, &stats);
-        
-        snprintf(json_response, sizeof(json_response),
-                "{"
-                "\"status\":\"running\","
-                "\"pid\":%d,"
-                "\"uptime_seconds\":%ld,"
-                "\"connections_served\":%lu,"
-                "\"requests_ok\":%lu,"
-                "\"requests_error\":%lu"
-                "}",
-                getpid(),
-                uptime,
-                stats.connections_served,
-                stats.requests_ok,
-                stats.requests_error
-        );
-        
-        http_send_json(client_fd, HTTP_OK, json_response, request_id);
-        server_update_stats(server, true, bytes_read, strlen(json_response));
-        
-    } else if (strcmp(http_req.path, "/help") == 0) {
-        // Endpoint de ayuda
-        const char *help_json = 
-            "{"
-            "\"message\":\"HTTP Server v1.0\","
-            "\"endpoints\":[\"/status\",\"/help\"],"
-            "\"note\":\"More endpoints coming in Phase 4 (Router)\""
-            "}";
-        
-        http_send_json(client_fd, HTTP_OK, help_json, request_id);
-        server_update_stats(server, true, bytes_read, strlen(help_json));
-        
+
+    ssize_t bytes_sent = router_handle_request(&http_req, client_fd, request_id, server, (size_t)bytes_read);
+    if (bytes_sent >= 0) {
+        server_update_stats(server, true, bytes_read, (size_t)bytes_sent);
     } else {
-        // Endpoint no encontrado (temporal)
-        http_send_error(client_fd, HTTP_NOT_FOUND,
-                       "Endpoint not found. Try /status or /help", request_id);
+        // router devolvió error: contar como fallo
         server_update_stats(server, false, bytes_read, 0);
     }
-    
+
     // Cerrar conexión
     close(client_fd);
     free(conn);
-    
+
     return NULL;
 }
 
