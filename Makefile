@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -Wall -Wextra -pthread -O2 -g -Isrc
-LDFLAGS = -lpthread -lm 
+LDFLAGS = -lpthread -lm -lssl -lcrypto
 COVERAGE_FLAGS = -fprofile-arcs -ftest-coverage
 
 # Directorios
@@ -26,8 +26,16 @@ UTILS_SRC = $(SRC_DIR)/utils/logger.c \
             $(SRC_DIR)/utils/timer.c \
             $(SRC_DIR)/utils/uuid.c
 
-# Basic Commands
-BASIC_COMMANDS_SRC = $(SRC_DIR)/commands/basic/reverse.c
+# Comandos
+BASIC_COMMANDS_SRC = $(SRC_DIR)/commands/basic/fibonacci.c \
+					 $(SRC_DIR)/commands/basic/reverse.c \
+					 $(SRC_DIR)/commands/basic/hash.c \
+					 $(SRC_DIR)/commands/basic/random.c
+
+CPU_BOUND_COMMANDS_SRC = $(SRC_DIR)/commands/cpu_bound/isprime.c \
+						 $(SRC_DIR)/commands/cpu_bound/factor.c 
+						 
+
 
 # Core (Queue)
 CORE_SRC = $(SRC_DIR)/core/queue.c \
@@ -40,7 +48,7 @@ SERVER_SRC = $(SRC_DIR)/server/http.c \
 			 $(SRC_DIR)/router/router.c
 
 # Todos los sources (sin main.c por ahora)
-ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC) $(BASIC_COMMANDS_SRC)
+ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC) $(BASIC_COMMANDS_SRC) $(CPU_BOUND_COMMANDS_SRC) 
 
 # Main
 MAIN_SRC = $(SRC_DIR)/main.c

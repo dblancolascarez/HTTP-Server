@@ -19,7 +19,6 @@ curl --version
 
 ## 🚀 Compilación y Ejecución
 
-### Servidor HTTP (Fase 3 - Actual)
 
 ```bash
 # 1. Construir imagen (solo la primera vez)
@@ -46,8 +45,19 @@ curl http://localhost:8080/help
 
 Tambien se puede probar 
 
+# BASIC
+
 status
 curl -i 'http://127.0.0.1:8080/status'
+
+fibonacci
+curl -i 'http://127.0.0.1:8080/fibonacci?num=3'
+
+hash
+curl -i 'http://127.0.0.1:8080/hash?text=someinput'
+
+random
+curl -i 'http://127.0.0.1:8080/random?count=55&min=1&max=10'
 
 reverse
 curl -i 'http://127.0.0.1:8080/reverse?text=abcdef'
@@ -60,6 +70,15 @@ curl -i 'http://127.0.0.1:8080/timestamp'
 
 submit job (example)
 curl -i 'http://127.0.0.1:8080/jobs/submit?task=isprime&n=97'
+
+# CPU BOUND
+
+is_prime
+curl -i 'http://127.0.0.1:8080/isprime?n=17'
+
+factor
+curl -i 'http://127.0.0.1:8080/factor?n=60'
+
 
 ```
 

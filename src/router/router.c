@@ -2,7 +2,8 @@
 #include "router.h"
 #include "../core/job_manager.h"
 #include "../utils/utils.h"
-#include "../commands/basic/reverse.h"
+#include "../commands/basic/basic_commands.h"
+#include "../commands/cpu_bound/cpu_bound_commands.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,7 +100,68 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
         return sent;
     }
 
-    // Handlers simples: /reverse, /toupper, /timestamp
+    // Basic Commands: /fibonacci, /hash, /random,  /reverse, /timestamp/, /toupper
+    if (strcmp(req->path, "/fibonacci") == 0) {
+        const char *num = get_query_param(qp, "num");
+        if (!num) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'num' parameter", request_id); 
+        }
+        
+        char *json = handle_fibonacci(num);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+    if (strcmp(req->path, "/hash") == 0) {
+        const char *text = get_query_param(qp, "text");
+        if (!text) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'text' parameter", request_id); 
+        }
+        
+        char *json = handle_hash(text);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+    if (strcmp(req->path, "/random")==0){
+        const char *count = get_query_param(qp, "count");
+        const char *min = get_query_param(qp, "min");
+        const char *max = get_query_param(qp, "max");
+
+        if (!count || !min || !max){
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'count', 'min', or 'max' parameter", request_id);
+        }
+
+        char *json = handle_random(count, min, max);
+        if (!json){
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+
     if (strcmp(req->path, "/reverse") == 0) {
         const char *text = get_query_param(qp, "text");
         if (!text) { 
@@ -141,6 +203,48 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
         free_query_params(qp);
         return sent;
     }
+
+    // Cpu Bound Commands: /is_prime, /factor 
+    if (strcmp(req->path, "/isprime") == 0) {
+        const char *n = get_query_param(qp, "n");
+        if (!n) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'n' parameter", request_id); 
+        }
+        
+        char *json = handle_isprime(n);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+    if (strcmp(req->path, "/factor") == 0) {
+        const char *n = get_query_param(qp, "n");
+        if (!n) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'n' parameter", request_id); 
+        }
+        
+        char *json = handle_factor(n);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+
+
 
     // JOBS endpoints: /jobs/submit, /jobs/status, /jobs/result, /jobs/cancel
     if (strncmp(req->path, "/jobs/", 6) == 0) {
