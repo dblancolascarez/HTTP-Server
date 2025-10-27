@@ -18,6 +18,10 @@ static PrimeFactor* factorize(uint64_t n, int* num_factors);
 // Main handler function
 char* handle_factor(const char* n_str) {
     if (!n_str) return NULL;
+
+    // Start timing
+    http_timer_t timer;
+    timer_start(&timer);
     
     // Decode the URL-encoded parameter
     char* decoded = url_decode(n_str);
@@ -42,9 +46,13 @@ char* handle_factor(const char* n_str) {
         return NULL;
     }
 
+    // Stop timing
+    timer_stop(&timer);
+    long elapsed = timer_elapsed_ms(&timer);
+
     // Build JSON response
     // Format: {"input":"n","factors":[{"prime":2,"count":3},{"prime":5,"count":1}]}
-    size_t json_len = strlen(decoded) + (num_factors * 50) + 128;
+    size_t json_len = strlen(decoded) + (num_factors * 50) + 256;
     char* json = malloc(json_len);
     if (!json) {
         free(decoded);
@@ -52,8 +60,9 @@ char* handle_factor(const char* n_str) {
         return NULL;
     }
 
+
     // Start building JSON
-    int offset = snprintf(json, json_len, "{\"input\":\"%s\",\"factors\":[", decoded);
+    int offset = snprintf(json, json_len, "{\"input\":\"%s\",\"factors\":[, \"elapsed_ms\":%ld", decoded, elapsed);
 
     // Add each factor with its count
     for (int i = 0; i < num_factors; i++) {

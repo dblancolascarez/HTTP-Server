@@ -4,6 +4,8 @@
 #include "../utils/utils.h"
 #include "../commands/basic/basic_commands.h"
 #include "../commands/cpu_bound/cpu_bound_commands.h"
+#include "../commands/io_bound/io_bound_commands.h"
+#include "../commands/files/files_commands.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -243,7 +245,113 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
         return sent;
     }
 
+    // IO Bound commands: /sortfile, /wordcount, /hashfile
+    if (strcmp(req->path, "/sortfile") == 0) {
+        const char *name = get_query_param(qp, "name");
+        const char *algo = get_query_param(qp, "algo");
+        
+        if (!name || !algo) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'name' or 'algo' parameter", request_id); 
+        }
+        
+        char *json = handle_sortfile(name, algo);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
 
+    if (strcmp(req->path, "/wordcount") == 0) {
+        const char *name = get_query_param(qp, "name");
+        
+        if (!name) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'name' parameter", request_id); 
+        }
+        
+        char *json = handle_wordcount(name);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+    if (strcmp(req->path, "/hashfile") == 0) {
+        const char *name = get_query_param(qp, "name");
+        const char *algo = get_query_param(qp, "algo");
+        
+        if (!name || !algo) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'name' or 'algo' parameter", request_id); 
+        }
+        
+        char *json = handle_hashfile(name, algo);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+
+
+    // Files commands: /createfile, /deletefile
+    if (strcmp(req->path, "/createfile") == 0) {
+        const char *name = get_query_param(qp, "name");
+        const char *content = get_query_param(qp, "content");
+        const char *repeat = get_query_param(qp, "repeat");
+        
+        if (!name || !content || !repeat) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'name', 'content', or 'repeat' parameter", request_id); 
+        }
+        
+        char *json = handle_createfile(name, content, repeat);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+    if (strcmp(req->path, "/deletefile") == 0) {
+        const char *name = get_query_param(qp, "name");
+        
+        if (!name) { 
+            free_query_params(qp); 
+            return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'name' parameter", request_id); 
+        }
+        
+        char *json = handle_deletefile(name);
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to process request", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
 
 
     // JOBS endpoints: /jobs/submit, /jobs/status, /jobs/result, /jobs/cancel

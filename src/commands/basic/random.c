@@ -12,6 +12,10 @@ char* handle_random(const char* count_str, const char* min_str, const char* max_
 char* handle_random(const char* count_str, const char* min_str, const char* max_str) {
     if (!count_str || !min_str || !max_str) return NULL;
 
+    // Start timing
+    http_timer_t timer;
+    timer_start(&timer);
+
     // Decode URL-encoded parameters
     char* decoded_count = url_decode(count_str);
     char* decoded_min = url_decode(min_str);
@@ -70,9 +74,13 @@ char* handle_random(const char* count_str, const char* min_str, const char* max_
         numbers[i] = (rand() % (max - min + 1)) + min;
     }
 
+    // Stop timing
+    timer_stop(&timer);
+    long elapsed = timer_elapsed_ms(&timer);
+
     // Build JSON array string
     // Format: {"count":"n","min":"a","max":"b","output":[x,y,z]}
-    size_t json_len = 128 + (count * 12); // Estimate size
+    size_t json_len = 256 + (count * 12); // Estimate size
     char* json = malloc(json_len);
     if (!json) {
         free(decoded_count);
@@ -82,10 +90,11 @@ char* handle_random(const char* count_str, const char* min_str, const char* max_
         return NULL;
     }
 
+
     // Start building JSON
     int offset = snprintf(json, json_len, 
-        "{\"count\":\"%s\",\"min\":\"%s\",\"max\":\"%s\",\"output\":[",
-        decoded_count, decoded_min, decoded_max);
+        "{\"count\":\"%s\",\"min\":\"%s\",\"max\":\"%s\",\"output\":[, \"elapsed_ms\":%ld",
+        decoded_count, decoded_min, decoded_max, elapsed);
 
      // Add numbers to array
     for (long i = 0; i < count; i++) {

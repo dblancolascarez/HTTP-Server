@@ -12,6 +12,10 @@ char* handle_fibonacci(const char* n_str);
 char* handle_fibonacci(const char* n_str) {
     if (!n_str) return NULL;
     
+    // Start timing
+    http_timer_t timer;
+    timer_start(&timer);
+
     // First decode the URL-encoded parameter
     char* decoded = url_decode(n_str);
     if (!decoded) return NULL;
@@ -47,9 +51,13 @@ char* handle_fibonacci(const char* n_str) {
     char result_str[32];
     snprintf(result_str, sizeof(result_str), "%llu", fib_result);
 
+    // Stop timing
+    timer_stop(&timer);
+    long elapsed = timer_elapsed_ms(&timer);
+
     // Allocate memory for the JSON response
     // Format: {"input":"n","output":"fibonacci_result"}
-    size_t json_len = strlen(decoded) + strlen(result_str) + 32;
+    size_t json_len = strlen(decoded) + strlen(result_str) + 64;
     char* json = malloc(json_len);
     if (!json) {
         free(decoded);
@@ -57,7 +65,7 @@ char* handle_fibonacci(const char* n_str) {
     }
 
     // Format the JSON response
-    snprintf(json, json_len, "{\"input\":\"%s\",\"output\":\"%s\"}", decoded, result_str);
+    snprintf(json, json_len, "{\"input\":\"%s\",\"output\":\"%s\",\"elapsed_ms\":%ld}", decoded, result_str, elapsed);
 
     // Clean up
     free(decoded);

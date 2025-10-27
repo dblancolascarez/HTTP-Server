@@ -73,11 +73,32 @@ curl -i 'http://127.0.0.1:8080/jobs/submit?task=isprime&n=97'
 
 # CPU BOUND
 
-is_prime
+isprime
 curl -i 'http://127.0.0.1:8080/isprime?n=17'
 
 factor
 curl -i 'http://127.0.0.1:8080/factor?n=60'
+
+# IO BOUND
+
+sortfile
+curl 'http://127.0.0.1:8080/createfile?name=numbers.txt&content=42%0A15%0A8%0A23%0A4%0A&repeat=1'
+curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=merge'
+curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=quick'
+
+wordcount
+curl -i 'http://127.0.0.1:8080/wordcount?name=test.txt'
+
+hashfile
+curl -i 'http://127.0.0.1:8080/hashfile?name=test.txt&algo=sha256'
+
+# FILES
+
+createfile
+curl -i 'http://127.0.0.1:8080/createfile?name=test.txt&content=Hello&repeat=3'
+
+deletefile
+curl -i 'http://127.0.0.1:8080/deletefile?name=test.txt'
 
 
 ```

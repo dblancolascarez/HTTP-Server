@@ -12,6 +12,10 @@ char* handle_hash(const char* text);
 char* handle_hash(const char* text) {
     if (!text) return NULL;
     
+    // Start timing
+    http_timer_t timer;
+    timer_start(&timer);
+
     // First decode the URL-encoded text
     char* decoded = url_decode(text);
     if (!decoded) return NULL;
@@ -55,17 +59,22 @@ char* handle_hash(const char* text) {
     }
     hash_hex[hash_len * 2] = '\0';
 
+    // Stop timing
+    timer_stop(&timer);
+    long elapsed = timer_elapsed_ms(&timer);
+
     // Allocate memory for the JSON response
     // Format: {"input":"original","output":"hash"}
-    size_t json_len = strlen(decoded) + strlen(hash_hex) + 32;
+    size_t json_len = strlen(decoded) + strlen(hash_hex) + 64;
     char* json = malloc(json_len);
     if (!json) {
         free(decoded);
         return NULL;
     }
 
+
     // Format the JSON response
-    snprintf(json, json_len, "{\"input\":\"%s\",\"output\":\"%s\"}", decoded, hash_hex);
+    snprintf(json, json_len, "{\"input\":\"%s\",\"output\":\"%s\", \"elapsed_ms\":%ld}", decoded, hash_hex, elapsed);
 
     // Clean up
     free(decoded);

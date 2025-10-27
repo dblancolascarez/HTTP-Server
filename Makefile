@@ -34,21 +34,25 @@ BASIC_COMMANDS_SRC = $(SRC_DIR)/commands/basic/fibonacci.c \
 
 CPU_BOUND_COMMANDS_SRC = $(SRC_DIR)/commands/cpu_bound/isprime.c \
 						 $(SRC_DIR)/commands/cpu_bound/factor.c 
-						 
 
+IO_BOUND_COMMANDS_SRC = $(SRC_DIR)/commands/io_bound/sortfile.c \
+						$(SRC_DIR)/commands/io_bound/wordcount.c \
+						$(SRC_DIR)/commands/io_bound/hashfile.c 
 
-# Core (Queue)
+FILE_COMMANDS_SRC = $(SRC_DIR)/commands/files/createfile.c \
+					$(SRC_DIR)/commands/files/deletefile.c
+# Core 
 CORE_SRC = $(SRC_DIR)/core/queue.c \
 		   $(SRC_DIR)/core/worker_pool.c \
 		   $(SRC_DIR)/core/job_manager.c
 
-# Server (HTTP + TCP)
+# Server 
 SERVER_SRC = $(SRC_DIR)/server/http.c \
 			 $(SRC_DIR)/server/server.c \
 			 $(SRC_DIR)/router/router.c
 
 # Todos los sources (sin main.c por ahora)
-ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC) $(BASIC_COMMANDS_SRC) $(CPU_BOUND_COMMANDS_SRC) 
+ALL_SRC = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC) $(BASIC_COMMANDS_SRC) $(CPU_BOUND_COMMANDS_SRC) $(IO_BOUND_COMMANDS_SRC) $(FILE_COMMANDS_SRC)
 
 # Main
 MAIN_SRC = $(SRC_DIR)/main.c

@@ -19,6 +19,10 @@ static uint64_t mod_pow(uint64_t base, uint64_t exp, uint64_t mod);
 // Main handler function
 char* handle_isprime(const char* n_str) {
     if (!n_str) return NULL;
+
+    // Start timing
+    http_timer_t timer;
+    timer_start(&timer);
     
     // Decode the URL-encoded parameter
     char* decoded = url_decode(n_str);
@@ -46,9 +50,13 @@ char* handle_isprime(const char* n_str) {
     method = "trial-division";
 #endif
 
+    // Stop timing
+    timer_stop(&timer);
+    long elapsed = timer_elapsed_ms(&timer);
+
     // Allocate memory for the JSON response
     // Format: {"input":"n","output":"true/false","method":"algorithm"}
-    size_t json_len = strlen(decoded) + 128;
+    size_t json_len = strlen(decoded) + 256;
     char* json = malloc(json_len);
     if (!json) {
         free(decoded);
@@ -57,8 +65,8 @@ char* handle_isprime(const char* n_str) {
 
     // Format the JSON response
     snprintf(json, json_len, 
-        "{\"input\":\"%s\",\"output\":%s,\"method\":\"%s\"}", 
-        decoded, is_prime ? "true" : "false", method);
+        "{\"input\":\"%s\",\"output\":%s,\"method\":\"%s\", \"elapsed_ms\":%ld}", 
+        decoded, is_prime ? "true" : "false", method, elapsed);
 
     free(decoded);
     return json;
