@@ -74,7 +74,6 @@ curl -i 'http://127.0.0.1:8080/jobs/submit?task=isprime&n=97'
 # CPU BOUND
 
 isprime
-curl -i 'http://127.0.0.1:8080/isprime?n=17'
 
 factor
 curl -i 'http://127.0.0.1:8080/factor?n=60'

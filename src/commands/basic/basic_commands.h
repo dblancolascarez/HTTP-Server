@@ -14,4 +14,10 @@ char* handle_random(const char* count_str, const char* min_str, const char* max_
 // The caller is responsible for freeing the returned string
 char* handle_reverse(const char* text);
 
+// Basic simulation and testing commands
+char* handle_simulate(const char* seconds_str, const char* task);
+char* handle_sleep(const char* seconds_str);
+char* handle_loadtest(const char* tasks_str, const char* sleep_str);
+char* handle_help(void);
+
 #endif // BASIC_COMMANDS_H

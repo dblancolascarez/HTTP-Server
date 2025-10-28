@@ -1,0 +1,9 @@
+2025-10-25 10:32:01 INFO  Server started successfully
+2025-10-25 10:33:12 WARN  Connection timeout from client 192.168.0.15
+2025-10-25 10:34:47 ERROR Failed to open file data/input.csv
+2025-10-25 10:35:03 INFO  Request handled in 142ms
+2025-10-25 10:36:22 ERROR Unable to connect to database
+2025-10-25 10:37:19 DEBUG Cache miss for key user_1042
+2025-10-25 10:38:44 INFO  New client connected from 192.168.0.27
+2025-10-25 10:39:15 ERROR File not found: /var/www/html/index.html
+2025-10-25 10:40:50 INFO  Server shutting down gracefully
