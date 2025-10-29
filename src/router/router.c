@@ -1,6 +1,7 @@
 // Mapeo paths -> handlers + dispatch
 #include "router.h"
 #include "../core/job_manager.h"
+#include "../core/job_executor.h"
 #include "../core/metrics.h"
 #include "../utils/utils.h"
 #include "../commands/basic/basic_commands.h"
@@ -19,17 +20,6 @@
 char* handle_pi(const char* digits_str);
 char* handle_mandelbrot(const char* width_str, const char* height_str, const char* max_iter_str);
 char* handle_matrixmul(const char* size_str, const char* seed_str);
-
-static const char* job_status_to_string(job_status_t s) {
-    switch (s) {
-        case JOB_STATUS_QUEUED: return "queued";
-        case JOB_STATUS_RUNNING: return "running";
-        case JOB_STATUS_DONE: return "done";
-        case JOB_STATUS_ERROR: return "error";
-        case JOB_STATUS_CANCELED: return "canceled";
-        default: return "unknown";
-    }
-}
 
 // Construir un JSON sencillo a partir de query_params_t (todos strings)
 static char* build_json_from_params(query_params_t *qp) {
@@ -71,6 +61,180 @@ static char* build_json_from_params(query_params_t *qp) {
     buf[len++] = '}';
     buf[len] = '\0';
     return buf;
+}
+
+static const char* job_status_to_string(job_status_t s) {
+    switch (s) {
+        case JOB_STATUS_QUEUED: return "queued";
+        case JOB_STATUS_RUNNING: return "running";
+        case JOB_STATUS_DONE: return "done";
+        case JOB_STATUS_ERROR: return "error";
+        case JOB_STATUS_CANCELED: return "canceled";
+        default: return "unknown";
+    }
+}
+
+// Implementación de los endpoints de jobs
+
+static ssize_t handle_jobs_submit(int client_fd, const char *request_id, query_params_t *qp) {
+    const char *task = get_query_param(qp, "task");
+    if (!task) {
+        return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'task' parameter", request_id);
+    }
+
+    // Construir payload JSON con todos los parámetros (guardado en job manager)
+    char *payload = build_json_from_params(qp);
+    if (!payload) {
+        return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to build job payload", request_id);
+    }
+
+    // Submit job (lo guarda en job manager y retorna job_id)
+    char *job_id = job_submit(task, payload, 0); // TODO: priority
+    free(payload);
+
+    if (!job_id) {
+        return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to submit job", request_id);
+    }
+
+    // Construir query string para pasar al executor: key=value&key2=value2
+    size_t qcap = 256;
+    size_t qlen = 0;
+    char *qbuf = malloc(qcap);
+    if (!qbuf) {
+        free(job_id);
+        return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Memory allocation failed", request_id);
+    }
+    qbuf[0] = '\0';
+
+    for (int i = 0; qp && i < qp->count; i++) {
+        const char *k = qp->params[i].key;
+        const char *v = qp->params[i].value ? qp->params[i].value : "";
+        size_t need = strlen(k) + 1 + strlen(v) + (qlen ? 1 : 0) + 1;
+        if (qlen + need >= qcap) {
+            qcap = qcap + need + 256;
+            char *tmp = realloc(qbuf, qcap);
+            if (!tmp) { free(qbuf); free(job_id); return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Memory allocation failed", request_id); }
+            qbuf = tmp;
+        }
+        if (qlen > 0) { qbuf[qlen++] = '&'; }
+        strcpy(qbuf + qlen, k);
+        qlen += strlen(k);
+        qbuf[qlen++] = '=';
+        strcpy(qbuf + qlen, v);
+        qlen += strlen(v);
+        qbuf[qlen] = '\0';
+    }
+
+    // Preparar task para el executor
+    char pathbuf[128];
+    snprintf(pathbuf, sizeof(pathbuf), "/%s", task);
+
+    task_t *t = task_create(-1, pathbuf, qbuf, request_id);
+    if (!t) {
+        free(qbuf);
+        free(job_id);
+        return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to create task", request_id);
+    }
+    // task_create duplica path/query internamente; guardamos job_id en la tarea
+    t->job_id = strdup(job_id);
+
+    // Encolar para ejecución asíncrona (job_executor toma ownership de task en caso de éxito)
+    int rc = job_executor_enqueue(t);
+    if (rc != 0) {
+        // Si falla el enqueue, liberar la tarea y continuar (el job queda en estado queued en job_manager)
+        task_free(t);
+        // Notificar cliente igualmente con el job_id; el job queda en queued y se puede reintentar más tarde.
+        free(qbuf);
+    } else {
+        // enqueue hizo copia del query/path internamente (task_create usó strdup), podemos liberar qbuf
+        free(qbuf);
+    }
+
+    // Responder con job_id
+    char json[256];
+    snprintf(json, sizeof(json), "{\"job_id\":\"%s\",\"status\":\"queued\"}", job_id);
+    free(job_id);
+
+    return http_send_json(client_fd, HTTP_OK, json, request_id);
+}
+
+static ssize_t handle_jobs_status(int client_fd, const char *request_id, query_params_t *qp) {
+    const char *id = get_query_param(qp, "id");
+    if (!id) {
+        return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'id' parameter", request_id);
+    }
+
+    // Get job status
+    job_status_info_t info;
+    if (job_get_status(id, &info) != 0) {
+        return http_send_error(client_fd, HTTP_NOT_FOUND, "Job not found", request_id);
+    }
+
+    // Response
+    char json[256];
+    snprintf(json, sizeof(json), 
+        "{\"status\":\"%s\",\"progress\":%d,\"eta_ms\":%ld}",
+        job_status_to_string(info.status), info.progress, info.eta_ms);
+
+    return http_send_json(client_fd, HTTP_OK, json, request_id);
+}
+
+static ssize_t handle_jobs_result(int client_fd, const char *request_id, query_params_t *qp) {
+    const char *id = get_query_param(qp, "id");
+    if (!id) {
+        return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'id' parameter", request_id);
+    }
+
+    // Get result
+    char *result = job_get_result(id);
+    if (!result) {
+        return http_send_error(client_fd, HTTP_NOT_FOUND, "Job not found or not completed", request_id);
+    }
+
+    ssize_t sent = http_send_json(client_fd, HTTP_OK, result, request_id);
+    free(result);
+    return sent;
+}
+
+static ssize_t handle_jobs_cancel(int client_fd, const char *request_id, query_params_t *qp) {
+    const char *id = get_query_param(qp, "id");
+    if (!id) {
+        return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'id' parameter", request_id);
+    }
+
+    // Try to cancel
+    int rc = job_cancel(id);
+    if (rc < 0) {
+        return http_send_error(client_fd, HTTP_NOT_FOUND, "Job not found", request_id);
+    }
+
+    // Response
+    const char *status = (rc == 0) ? "canceled" : "not_cancelable";
+    char json[256];
+    snprintf(json, sizeof(json), "{\"status\":\"%s\"}", status);
+
+    return http_send_json(client_fd, HTTP_OK, json, request_id);
+}
+
+// Main jobs router
+ssize_t handle_jobs_request(const char *subpath, int client_fd, const char *request_id, query_params_t *qp) {
+    if (strcmp(subpath, "submit") == 0) {
+        return handle_jobs_submit(client_fd, request_id, qp);
+    }
+    
+    if (strcmp(subpath, "status") == 0) {
+        return handle_jobs_status(client_fd, request_id, qp);
+    }
+    
+    if (strcmp(subpath, "result") == 0) {
+        return handle_jobs_result(client_fd, request_id, qp);
+    }
+    
+    if (strcmp(subpath, "cancel") == 0) {
+        return handle_jobs_cancel(client_fd, request_id, qp);
+    }
+
+    return http_send_error(client_fd, HTTP_NOT_FOUND, "Invalid jobs endpoint", request_id);
 }
 
 ssize_t router_handle_request(const http_request_t *req, int client_fd,
@@ -512,76 +676,16 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
         return sent;
     }
 
+    //*************************************** */
+    // Jobs Endpoints
+    //*************************************** */
 
-
-
-
-
-    // JOBS endpoints: /jobs/submit, /jobs/status, /jobs/result, /jobs/cancel
     if (strncmp(req->path, "/jobs/", 6) == 0) {
-        const char *sub = req->path + 6; // after /jobs/
-
-        if (strcmp(sub, "submit") == 0) {
-            const char *task = get_query_param(qp, "task");
-            if (!task) { free_query_params(qp); return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'task' parameter", request_id); }
-            // Construir payload JSON con los parámetros excepto 'task'
-            // Para simplicidad incluimos todo el query como JSON
-            char *payload = build_json_from_params(qp);
-            // Encolar job
-            char *job_id = job_submit(task, payload, 0);
-            free(payload);
-            if (!job_id) { free_query_params(qp); return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to submit job", request_id); }
-            char json[512];
-            snprintf(json, sizeof(json), "{\"job_id\":\"%s\",\"status\":\"queued\"}", job_id);
-            free(job_id);
-            ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
-            free_query_params(qp);
-            return sent;
-        }
-
-        if (strcmp(sub, "status") == 0) {
-            const char *id = get_query_param(qp, "id");
-            if (!id) { free_query_params(qp); return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'id' parameter", request_id); }
-            job_status_info_t info;
-            int r = job_get_status(id, &info);
-            if (r != 0) { free_query_params(qp); return http_send_error(client_fd, HTTP_NOT_FOUND, "Job not found", request_id); }
-            char json[256];
-            snprintf(json, sizeof(json), "{\"status\":\"%s\",\"progress\":%d,\"eta_ms\":%ld}", job_status_to_string(info.status), info.progress, info.eta_ms);
-            ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
-            free_query_params(qp);
-            return sent;
-        }
-
-        if (strcmp(sub, "result") == 0) {
-            const char *id = get_query_param(qp, "id");
-            if (!id) { free_query_params(qp); return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'id' parameter", request_id); }
-            char *res = job_get_result(id);
-            if (!res) { free_query_params(qp); return http_send_error(client_fd, HTTP_NOT_FOUND, "Result not available", request_id); }
-            // res puede ya ser JSON. Enviarlo tal cual.
-            ssize_t sent = http_send_json(client_fd, HTTP_OK, res, request_id);
-            free(res); free_query_params(qp);
-            return sent;
-        }
-
-        if (strcmp(sub, "cancel") == 0) {
-            const char *id = get_query_param(qp, "id");
-            if (!id) { free_query_params(qp); return http_send_error(client_fd, HTTP_BAD_REQUEST, "Missing 'id' parameter", request_id); }
-            int r = job_cancel(id);
-            if (r == -1) { free_query_params(qp); return http_send_error(client_fd, HTTP_NOT_FOUND, "Job not found", request_id); }
-            if (r == 1) {
-                char json[128]; snprintf(json, sizeof(json), "{\"status\":\"not_cancelable\"}");
-                ssize_t sent = http_send_json(client_fd, HTTP_CONFLICT, json, request_id);
-                free_query_params(qp);
-                return sent;
-            }
-            char json[128]; snprintf(json, sizeof(json), "{\"status\":\"canceled\"}");
-            ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
-            free_query_params(qp);
-            return sent;
-        }
+        const char *sub = req->path + 6;
+        return handle_jobs_request(sub, client_fd, request_id, qp);
     }
-
-    // Otras rutas no implementadas: devolver 404
+    // Ruta no encontrada
     free_query_params(qp);
-    return http_send_error(client_fd, HTTP_NOT_FOUND, "Endpoint not implemented", request_id);
+    return http_send_error(client_fd, HTTP_NOT_FOUND, "Endpoint not found", request_id);
 }
+

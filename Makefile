@@ -59,6 +59,7 @@ FILE_COMMANDS_SRC = $(SRC_DIR)/commands/files/createfile.c \
 CORE_SRC = $(SRC_DIR)/core/queue.c \
 		   $(SRC_DIR)/core/worker_pool.c \
 		   $(SRC_DIR)/core/job_manager.c \
+		   $(SRC_DIR)/core/job_executor.c \
 		   $(SRC_DIR)/core/metrics.c
 
 # Server (HTTP + TCP)

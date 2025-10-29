@@ -1,0 +1,9 @@
+{
+  "job_id": "1761716157391759-5578-8",
+  "task_name": "simulate",
+  "status": 0,
+  "progress": 0,
+  "eta_ms": -1,
+  "payload": {"task":"simulate","seconds":"10"},
+  "created_at": 1761716157
+}

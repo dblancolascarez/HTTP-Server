@@ -4,6 +4,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include "server/server.h"
+#include "core/job_manager.h"
+#include "core/job_executor.h"
+#include "core/metrics.h"
 #include "utils/utils.h"
 
 // Variable global para el servidor (para signal handler)
@@ -49,6 +52,27 @@ int main(int argc, char *argv[]) {
     LOG_INFO("===========================================");
     LOG_INFO("PID: %d", getpid());
     
+    // Inicializar job manager
+    LOG_INFO("Initializing Job Manager...");
+    if (job_manager_init("data/jobs") != 0) {
+        LOG_ERROR("Failed to initialize Job Manager");
+        logger_shutdown();
+        return 1;
+    }
+    
+    // Inicializar job executor (4 workers, cola de 100)
+    LOG_INFO("Initializing Job Executor (4 workers, queue depth: 100)...");
+    if (job_executor_init(4, 100) != 0) {
+        LOG_ERROR("Failed to initialize Job Executor");
+        job_manager_shutdown();
+        logger_shutdown();
+        return 1;
+    }
+    
+    // Inicializar sistema de métricas
+    LOG_INFO("Initializing Metrics System...");
+    metrics_init();
+    
     // Configurar servidor
     server_config_t config = {
         .port = port,
@@ -79,6 +103,16 @@ int main(int argc, char *argv[]) {
     
     // Cleanup
     LOG_INFO("Cleaning up...");
+    
+    LOG_INFO("Shutting down Job Executor...");
+    job_executor_shutdown();
+    
+    LOG_INFO("Shutting down Job Manager...");
+    job_manager_shutdown();
+    
+    LOG_INFO("Shutting down Metrics...");
+    metrics_destroy();
+    
     server_destroy(g_server);
     logger_shutdown();
     

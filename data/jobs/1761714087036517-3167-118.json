@@ -1,0 +1,9 @@
+{
+  "job_id": "1761714087036517-3167-118",
+  "task_name": "pi",
+  "status": 0,
+  "progress": 0,
+  "eta_ms": -1,
+  "payload": {"task":"pi","digits":"100000"},
+  "created_at": 1761714087
+}
