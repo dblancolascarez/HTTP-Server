@@ -144,6 +144,7 @@ make test_string        # Tests de string utils
 make test_job_manager
 make test_worker_pool
 make test_http          # Tests de HTTP parser
+make test_metrics
 
 # 2. Ejecutar TODOS los tests
 make test

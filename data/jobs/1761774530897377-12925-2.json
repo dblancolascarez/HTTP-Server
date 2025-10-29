@@ -1,0 +1,9 @@
+{
+  "job_id": "1761774530897377-12925-2",
+  "task_name": "errtask",
+  "status": 3,
+  "progress": 0,
+  "eta_ms": -1,
+  "error": "something went wrong",
+  "created_at": 1761774530
+}

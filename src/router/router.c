@@ -653,8 +653,7 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
         free(json);
         free_query_params(qp);
         return sent;
-    }
-    char json_response[8192]; 
+    } 
 
     if (strcmp(req->path, "/metrics") == 0) {
         char *json = malloc(8192); // Buffer suficiente para las métricas

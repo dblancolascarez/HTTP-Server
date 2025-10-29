@@ -82,7 +82,8 @@ TEST_STRING_SRC = $(TEST_DIR)/test_string_utils.c
 TEST_JOB_MANAGER_SRC = $(TEST_DIR)/test_job_manager.c
 TEST_WORKER_POOL_SRC = $(TEST_DIR)/test_worker_pool.c
 TEST_HTTP_SRC = $(TEST_DIR)/test_http_parser.c
-TEST_METRICS_SRC = $(TEST_DIR)/test_metrics.c 
+TEST_METRICS_SRC = $(TEST_DIR)/test_metrics.c
+TEST_RACE_CONDITIONS_SRC = $(TEST_DIR)/test_race_conditions.c 
 
 # ============================================================================
 # TARGETS PRINCIPALES
@@ -98,16 +99,27 @@ help:
 	@echo "=========================================="
 	@echo ""
 	@echo "Targets disponibles:"
-	@echo "  $(GREEN)make server$(NC)          - Compilar servidor HTTP"
-	@echo "  $(GREEN)make run$(NC)             - Compilar y ejecutar servidor"
-	@echo "  $(GREEN)make test_queue$(NC)      - Tests de queue"
-	@echo "  $(GREEN)make test_string$(NC)     - Tests de string_utils"
-	@echo "  $(GREEN)make test_http$(NC)       - Tests de HTTP parser"
-	@echo "  $(GREEN)make test_metrics$(NC)    - Tests de sistema de métricas" 
-	@echo "  $(GREEN)make test$(NC)            - Ejecutar TODOS los tests"
-	@echo "  $(GREEN)make coverage$(NC)        - Generar reporte de cobertura"
-	@echo "  $(GREEN)make clean$(NC)           - Limpiar archivos compilados"
+	@echo "  $(GREEN)make server$(NC)             - Compilar servidor HTTP"
+	@echo "  $(GREEN)make run$(NC)                - Compilar y ejecutar servidor"
 	@echo ""
+	@echo "  $(BLUE)Tests:$(NC)"
+	@echo "  $(GREEN)make test_queue$(NC)         - Tests de queue"
+	@echo "  $(GREEN)make test_string$(NC)        - Tests de string_utils"
+	@echo "  $(GREEN)make test_worker_pool$(NC)   - Tests de worker pool"
+	@echo "  $(GREEN)make test_job_manager$(NC)   - Tests de job manager"
+	@echo "  $(GREEN)make test_http$(NC)          - Tests de HTTP parser"
+	@echo "  $(GREEN)make test_metrics$(NC)       - Tests de sistema de métricas"
+	@echo "  $(GREEN)make test_race_conditions$(NC) - Tests de concurrencia"
+	@echo "  $(GREEN)make test$(NC)               - Ejecutar TODOS los tests"
+	@echo ""
+	@echo "  $(BLUE)Cobertura:$(NC)"
+	@echo "  $(GREEN)make coverage$(NC)           - Reporte de cobertura (texto)"
+	@echo "  $(GREEN)make coverage-html$(NC)      - Reporte de cobertura (HTML)"
+	@echo "  $(GREEN)make clean-coverage$(NC)     - Limpiar archivos de cobertura"
+	@echo ""
+	@echo "  $(GREEN)make clean$(NC)              - Limpiar archivos compilados"
+	@echo ""
+
 
 # ============================================================================
 # SERVIDOR PRINCIPAL
@@ -190,7 +202,7 @@ test_http: $(BUILD_DIR)/test_http_parser
 	@echo "$(GREEN)  Ejecutando Tests de HTTP Parser$(NC)"
 	@echo "$(GREEN)=========================================$(NC)"
 	@./$(BUILD_DIR)/test_http_parser
-	@if [ $? -eq 0 ]; then \
+	@if [ $$? -eq 0 ]; then \
 		echo "$(GREEN)✅ Tests de HTTP Parser: PASSED$(NC)"; \
 	else \
 		echo "$(RED)❌ Tests de HTTP Parser: FAILED$(NC)"; \
@@ -210,12 +222,30 @@ test_metrics: $(BUILD_DIR)/test_metrics
 	    exit 1; \
 	fi
 
+test_race_conditions: $(BUILD_DIR)/test_race_conditions
+	@echo ""
+	@echo "$(GREEN)=========================================$(NC)"
+	@echo "$(GREEN)  Test de Race Conditions$(NC)"
+	@echo "$(GREEN)=========================================$(NC)"
+	@./$(BUILD_DIR)/test_race_conditions
+	@if [ $$? -eq 0 ]; then \
+		echo "$(GREEN)✅ Tests de Race Conditions: PASSED$(NC)"; \
+	else \
+	    echo "$(RED)❌ Tests de Race Conditions: FAILED$(NC)"; \
+	    exit 1; \
+	fi
+
+
+
 
 # ============================================================================
 # COMPILACIÓN DE TESTS
 # ============================================================================
 
-$(BUILD_DIR)/test_queue: $(TEST_QUEUE_SRC) $(CORE_SRC) $(UTILS_SRC)
+# Dependencias completas para tests que usan el sistema completo
+FULL_TEST_DEPS = $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC) $(BASIC_COMMANDS_SRC) $(CPU_COMMANDS_SRC) $(IO_COMMANDS_SRC) $(FILE_COMMANDS_SRC)
+
+$(BUILD_DIR)/test_queue: $(TEST_QUEUE_SRC) $(FULL_TEST_DEPS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando test_queue..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
@@ -225,31 +255,35 @@ $(BUILD_DIR)/test_string_utils: $(TEST_STRING_SRC) $(UTILS_SRC)
 	@echo "Compilando test_string_utils..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
 
-$(BUILD_DIR)/test_worker_pool: $(TEST_WORKER_POOL_SRC) $(WORKER_POOL_SRC) $(CORE_SRC) $(UTILS_SRC)
+$(BUILD_DIR)/test_worker_pool: $(TEST_WORKER_POOL_SRC) $(FULL_TEST_DEPS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando test_worker_pool..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
 
-$(BUILD_DIR)/test_job_manager: $(TEST_JOB_MANAGER_SRC) $(CORE_SRC) $(UTILS_SRC) $(SRC_DIR)/core/job_manager.c
+$(BUILD_DIR)/test_job_manager: $(TEST_JOB_MANAGER_SRC) $(FULL_TEST_DEPS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando test_job_manager..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov 
 
-$(BUILD_DIR)/test_http_parser: $(TEST_HTTP_SRC) $(SERVER_SRC) $(UTILS_SRC)
+$(BUILD_DIR)/test_http_parser: $(TEST_HTTP_SRC) $(FULL_TEST_DEPS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando test_http_parser..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov
 
-$(BUILD_DIR)/test_metrics: $(TEST_METRICS_SRC) $(CORE_SRC) $(UTILS_SRC)
+$(BUILD_DIR)/test_metrics: $(TEST_METRICS_SRC) $(FULL_TEST_DEPS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando test_metrics..."
+	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov
+$(BUILD_DIR)/test_race_conditions: $(TEST_RACE_CONDITIONS_SRC) $(FULL_TEST_DEPS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compilando test_race_conditions..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov
 
 # ============================================================================
 # EJECUTAR TODOS LOS TESTS
 # ============================================================================
 
-test: test_string test_queue test_worker_pool test_job_manager test_http test_metrics
+test: test_string test_queue test_worker_pool test_job_manager test_http test_metrics test_race_conditions
 	@echo ""
 	@echo "$(GREEN)=========================================$(NC)"
 	@echo "$(GREEN)  🎉 TODOS LOS TESTS PASARON$(NC)"
@@ -261,34 +295,126 @@ test: test_string test_queue test_worker_pool test_job_manager test_http test_me
 # ============================================================================
 
 coverage: test
+	@bash scripts/coverage.sh
 	@echo ""
 	@echo "=========================================="
 	@echo "  Generando Reporte de Cobertura"
 	@echo "=========================================="
 	@echo ""
-	@gcov -r $(CORE_SRC) $(UTILS_SRC) $(SERVER_SRC) > /dev/null 2>&1
-	@echo "Archivos de cobertura:"
+	
+	# Limpiar archivos .gcov antiguos
+	@rm -f *.gcov 2>/dev/null || true
+	
+	# Copiar archivos .gcda del build al directorio de fuentes
+	@echo "Preparando archivos de cobertura..."
+	@find $(BUILD_DIR) -name "*.gcda" -exec cp {} . \; 2>/dev/null || true
+	@find $(BUILD_DIR) -name "*.gcno" -exec cp {} . \; 2>/dev/null || true
+	
+	# Generar archivos .gcov
+	@echo "Generando reportes de cobertura..."
+	@for src in $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC); do \
+		gcov -o . $$src > /dev/null 2>&1 || true; \
+	done
+	
 	@echo ""
-	@for file in $(CORE_SRC) $(UTILS_SRC) $(SERVER_SRC); do \
+	@echo "╔════════════════════════════════════════════════════════╗"
+	@echo "║          REPORTE DE COBERTURA POR MÓDULO              ║"
+	@echo "╚════════════════════════════════════════════════════════╝"
+	@echo ""
+	
+	# Mostrar cobertura de utils
+	@echo "$(BLUE)═══ Utils ═══$(NC)"
+	@for file in $(UTILS_SRC); do \
 		base=$$(basename $$file .c); \
-		if [ -f $$base.c.gcov ]; then \
-			lines=$$(grep -c "####" $$base.c.gcov 2>/dev/null || echo 0); \
-			total=$$(grep -cE "^ *[0-9]+" $$base.c.gcov 2>/dev/null || echo 1); \
-			covered=$$((total - lines)); \
-			percent=$$((covered * 100 / total)); \
-			if [ $$percent -ge 90 ]; then \
-				echo "  $(GREEN)✅ $$base.c: $$percent%$(NC)"; \
-			elif [ $$percent -ge 70 ]; then \
-				echo "  ⚠️  $$base.c: $$percent%"; \
-			else \
-				echo "  $(RED)❌ $$base.c: $$percent%$(NC)"; \
+		gcov_file=$$(ls -1 $$base.c.gcov 2>/dev/null | head -1); \
+		if [ -n "$$gcov_file" ] && [ -f "$$gcov_file" ]; then \
+			total=$$(grep -cE "^[ ]*[0-9#-]+:" $$gcov_file 2>/dev/null || echo 1); \
+			covered=$$(grep -cE "^[ ]*[1-9][0-9]*:" $$gcov_file 2>/dev/null || echo 0); \
+			uncovered=$$(grep -cE "^[ ]*#+:" $$gcov_file 2>/dev/null || echo 0); \
+			if [ $$total -gt 0 ]; then \
+				percent=$$((covered * 100 / (covered + uncovered))); \
+				if [ $$percent -ge 90 ]; then \
+					printf "  $(GREEN)✅ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				elif [ $$percent -ge 70 ]; then \
+					printf "  ⚠️  %-30s %3d%% (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				elif [ $$percent -ge 50 ]; then \
+					printf "  $(BLUE)📊 %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				else \
+					printf "  $(RED)❌ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				fi; \
 			fi; \
+		else \
+			printf "  ⚪ %-30s  N/A\n" "$$base.c"; \
 		fi; \
 	done
+	
+	# Mostrar cobertura de core
 	@echo ""
-	@echo "Archivos .gcov generados en el directorio actual"
+	@echo "$(BLUE)═══ Core ═══$(NC)"
+	@for file in $(CORE_SRC); do \
+		base=$$(basename $$file .c); \
+		gcov_file=$$(ls -1 $$base.c.gcov 2>/dev/null | head -1); \
+		if [ -n "$$gcov_file" ] && [ -f "$$gcov_file" ]; then \
+			total=$$(grep -cE "^[ ]*[0-9#-]+:" $$gcov_file 2>/dev/null || echo 1); \
+			covered=$$(grep -cE "^[ ]*[1-9][0-9]*:" $$gcov_file 2>/dev/null || echo 0); \
+			uncovered=$$(grep -cE "^[ ]*#+:" $$gcov_file 2>/dev/null || echo 0); \
+			if [ $$total -gt 0 ]; then \
+				percent=$$((covered * 100 / (covered + uncovered))); \
+				if [ $$percent -ge 90 ]; then \
+					printf "  $(GREEN)✅ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				elif [ $$percent -ge 70 ]; then \
+					printf "  ⚠️  %-30s %3d%% (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				elif [ $$percent -ge 50 ]; then \
+					printf "  $(BLUE)📊 %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				else \
+					printf "  $(RED)❌ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				fi; \
+			fi; \
+		else \
+			printf "  ⚪ %-30s  N/A\n" "$$base.c"; \
+		fi; \
+	done
+	
+	# Mostrar cobertura de server
+	@echo ""
+	@echo "$(BLUE)═══ Server ═══$(NC)"
+	@for file in $(SERVER_SRC); do \
+		base=$$(basename $$file .c); \
+		gcov_file=$$(ls -1 $$base.c.gcov 2>/dev/null | head -1); \
+		if [ -n "$$gcov_file" ] && [ -f "$$gcov_file" ]; then \
+			total=$$(grep -cE "^[ ]*[0-9#-]+:" $$gcov_file 2>/dev/null || echo 1); \
+			covered=$$(grep -cE "^[ ]*[1-9][0-9]*:" $$gcov_file 2>/dev/null || echo 0); \
+			uncovered=$$(grep -cE "^[ ]*#+:" $$gcov_file 2>/dev/null || echo 0); \
+			if [ $$total -gt 0 ]; then \
+				percent=$$((covered * 100 / (covered + uncovered))); \
+				if [ $$percent -ge 90 ]; then \
+					printf "  $(GREEN)✅ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				elif [ $$percent -ge 70 ]; then \
+					printf "  ⚠️  %-30s %3d%% (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				elif [ $$percent -ge 50 ]; then \
+					printf "  $(BLUE)📊 %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				else \
+					printf "  $(RED)❌ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+				fi; \
+			fi; \
+		else \
+			printf "  ⚪ %-30s  N/A\n" "$$base.c"; \
+		fi; \
+	done
+	
+	@echo ""
+	@echo "Leyenda:"
+	@echo "  $(GREEN)✅ 90-100%$(NC) - Excelente cobertura"
+	@echo "  ⚠️  70-89%  - Buena cobertura"
+	@echo "  $(BLUE)📊 50-69%$(NC)  - Cobertura media"
+	@echo "  $(RED)❌ 0-49%$(NC)   - Cobertura baja"
+	@echo "  ⚪ N/A      - Sin datos de cobertura"
+	@echo ""
+	@total_gcov=$$(ls -1 *.c.gcov 2>/dev/null | wc -l); \
+	echo "Archivos .gcov generados: $$total_gcov"
 	@echo "Ver detalles: cat <archivo>.c.gcov"
 	@echo ""
+
 
 # ============================================================================
 # LIMPIEZA
