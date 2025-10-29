@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
     test_queue_all();
     test_string_utils_all();
     test_http_parser_all();
+    test_metrics_all();
     
     // Imprimir resumen
     print_test_summary();

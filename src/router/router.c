@@ -1,6 +1,7 @@
 // Mapeo paths -> handlers + dispatch
 #include "router.h"
 #include "../core/job_manager.h"
+#include "../core/metrics.h"
 #include "../utils/utils.h"
 #include "../commands/basic/basic_commands.h"
 #include "../commands/cpu_bound/cpu_bound_commands.h"
@@ -489,6 +490,29 @@ ssize_t router_handle_request(const http_request_t *req, int client_fd,
         free_query_params(qp);
         return sent;
     }
+    char json_response[8192]; 
+
+    if (strcmp(req->path, "/metrics") == 0) {
+        char *json = malloc(8192); // Buffer suficiente para las métricas
+        if (!json) {
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Memory allocation failed", request_id);
+        }
+        
+        int written = metrics_get_json(json, 8192);
+        if (written <= 0) {
+            free(json);
+            free_query_params(qp);
+            return http_send_error(client_fd, HTTP_INTERNAL_ERROR, "Failed to generate metrics", request_id);
+        }
+        
+        ssize_t sent = http_send_json(client_fd, HTTP_OK, json, request_id);
+        free(json);
+        free_query_params(qp);
+        return sent;
+    }
+
+
 
 
 

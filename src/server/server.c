@@ -3,6 +3,7 @@
 #include "http.h"
 #include "../utils/utils.h"
 #include "../router/router.h"
+#include "../core/metrics.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +40,51 @@ server_state_t* server_init(const server_config_t *config) {
     gettimeofday(&server->stats.start_time, NULL);
     pthread_mutex_init(&server->stats.mutex, NULL);
     pthread_mutex_init(&server->shutdown_mutex, NULL);
+
+    // ============================================================
+    // INICIALIZAR SISTEMA DE MÉTRICAS
+    // ============================================================
+    metrics_init();
+    
+    // Registrar comandos con sus respectivas configuraciones
+    // Ajusta los parámetros según tu implementación:
+    // num_workers, queue_capacity, buffer_size
+    // ============================================================
+    // COMANDOS CPU-BOUND (cómputo intensivo)
+    // Usar más workers (típicamente igual al número de cores)
+    // ============================================================
+    metrics_register_command("factor", 4, 100, 100);
+    metrics_register_command("isprime", 4, 100, 100);
+    metrics_register_command("mandelbrot", 4, 100, 100);
+    metrics_register_command("matrixmul", 4, 100, 100);
+    metrics_register_command("pi", 4, 100, 100);
+    metrics_register_command("hashfile", 4, 100, 100);      // hashing es CPU-intensivo
+    metrics_register_command("sortfile", 4, 100, 100);      // sorting es CPU-intensivo
+    metrics_register_command("wordcount", 4, 100, 100);     // análisis de texto es CPU-intensivo
+    metrics_register_command("compress", 4, 100, 100);      // compresión es CPU-intensivo
+
+    // ============================================================
+    // COMANDOS I/O-BOUND (operaciones de disco/red)
+    // Usar menos workers (2-3 es suficiente)
+    // ============================================================
+    metrics_register_command("createfile", 2, 100, 100);
+    metrics_register_command("deletefile", 2, 100, 100);
+    metrics_register_command("grep", 2, 100, 100);          // lectura de archivos
+
+    // ============================================================
+    // COMANDOS SIMPLES/RÁPIDOS (mínimo procesamiento)
+    // Usar 1-2 workers
+    // ============================================================
+    metrics_register_command("random", 1, 100, 100);
+    metrics_register_command("reverse", 1, 100, 100);
+    metrics_register_command("timestamp", 1, 100, 100);
+    metrics_register_command("toupper", 1, 100, 100);
+    metrics_register_command("sleep_cmd", 1, 100, 100);
+    metrics_register_command("simulate", 1, 100, 100);
+
+    LOG_INFO("Metrics system initialized with %d commands", 18);
+    // ============================================================
+    // ============================================================
     
     // Crear socket TCP
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -262,13 +308,15 @@ void* connection_handler(void *arg) {
     // FASE 4: Delegar al router
     // El router se encarga de validar parámetros y de enviar la respuesta
     // ========================================================================
-
+    
     ssize_t bytes_sent = router_handle_request(&http_req, client_fd, request_id, server, (size_t)bytes_read);
     if (bytes_sent >= 0) {
         server_update_stats(server, true, bytes_read, (size_t)bytes_sent);
+        metrics_increment_requests(); 
     } else {
         // router devolvió error: contar como fallo
         server_update_stats(server, false, bytes_read, 0);
+        metrics_increment_errors();  
     }
 
     // Cerrar conexión
@@ -365,6 +413,10 @@ void server_shutdown(server_state_t *server) {
 
 void server_destroy(server_state_t *server) {
     if (!server) return;
+
+    // Destruir sistema de métricas
+    metrics_destroy();
+    LOG_INFO("Metrics system destroyed");
     
     if (server->server_fd >= 0) {
         close(server->server_fd);

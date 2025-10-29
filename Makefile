@@ -58,7 +58,8 @@ FILE_COMMANDS_SRC = $(SRC_DIR)/commands/files/createfile.c \
 # Core (Queue)
 CORE_SRC = $(SRC_DIR)/core/queue.c \
 		   $(SRC_DIR)/core/worker_pool.c \
-		   $(SRC_DIR)/core/job_manager.c
+		   $(SRC_DIR)/core/job_manager.c \
+		   $(SRC_DIR)/core/metrics.c
 
 # Server (HTTP + TCP)
 SERVER_SRC = $(SRC_DIR)/server/http.c \
@@ -80,6 +81,7 @@ TEST_STRING_SRC = $(TEST_DIR)/test_string_utils.c
 TEST_JOB_MANAGER_SRC = $(TEST_DIR)/test_job_manager.c
 TEST_WORKER_POOL_SRC = $(TEST_DIR)/test_worker_pool.c
 TEST_HTTP_SRC = $(TEST_DIR)/test_http_parser.c
+TEST_METRICS_SRC = $(TEST_DIR)/test_metrics.c 
 
 # ============================================================================
 # TARGETS PRINCIPALES
@@ -100,6 +102,7 @@ help:
 	@echo "  $(GREEN)make test_queue$(NC)      - Tests de queue"
 	@echo "  $(GREEN)make test_string$(NC)     - Tests de string_utils"
 	@echo "  $(GREEN)make test_http$(NC)       - Tests de HTTP parser"
+	@echo "  $(GREEN)make test_metrics$(NC)    - Tests de sistema de métricas" 
 	@echo "  $(GREEN)make test$(NC)            - Ejecutar TODOS los tests"
 	@echo "  $(GREEN)make coverage$(NC)        - Generar reporte de cobertura"
 	@echo "  $(GREEN)make clean$(NC)           - Limpiar archivos compilados"
@@ -193,6 +196,20 @@ test_http: $(BUILD_DIR)/test_http_parser
 		exit 1; \
 	fi
 
+test_metrics: $(BUILD_DIR)/test_metrics
+	@echo ""
+	@echo "$(GREEN)=========================================$(NC)"
+	@echo "$(GREEN)  Ejecutando Tests de Metrics$(NC)"
+	@echo "$(GREEN)=========================================$(NC)"
+	@./$(BUILD_DIR)/test_metrics
+	@if [ $$? -eq 0 ]; then \
+	    echo "$(GREEN)✅ Tests de Metrics: PASSED$(NC)"; \
+	else \
+	    echo "$(RED)❌ Tests de Metrics: FAILED$(NC)"; \
+	    exit 1; \
+	fi
+
+
 # ============================================================================
 # COMPILACIÓN DE TESTS
 # ============================================================================
@@ -221,11 +238,17 @@ $(BUILD_DIR)/test_http_parser: $(TEST_HTTP_SRC) $(SERVER_SRC) $(UTILS_SRC)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando test_http_parser..."
 	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov
+
+$(BUILD_DIR)/test_metrics: $(TEST_METRICS_SRC) $(CORE_SRC) $(UTILS_SRC)
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compilando test_metrics..."
+	@$(CC) $(CFLAGS) $(COVERAGE_FLAGS) -o $@ $^ $(LDFLAGS) -lgcov
+
 # ============================================================================
 # EJECUTAR TODOS LOS TESTS
 # ============================================================================
 
-test: test_string test_queue test_worker_pool test_job_manager test_http
+test: test_string test_queue test_worker_pool test_job_manager test_http test_metrics
 	@echo ""
 	@echo "$(GREEN)=========================================$(NC)"
 	@echo "$(GREEN)  🎉 TODOS LOS TESTS PASARON$(NC)"
