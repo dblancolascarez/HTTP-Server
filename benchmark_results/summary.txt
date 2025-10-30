@@ -25,3 +25,30 @@ Latency p99: 43ms
 Completed: 1000
 Failed: 0
 ---
+Profile: perfil1_ligera
+Timestamp: Thu Oct 30 04:06:36 UTC 2025
+Throughput: 8496.18 req/s
+Latency p50: 1ms
+Latency p95: 1ms
+Latency p99: 1ms
+Completed: 100
+Failed: 0
+---
+Profile: perfil2_media
+Timestamp: Thu Oct 30 04:06:38 UTC 2025
+Throughput: 8402.09 req/s
+Latency p50: 6ms
+Latency p95: 7ms
+Latency p99: 8ms
+Completed: 500
+Failed: 0
+---
+Profile: perfil3_alta
+Timestamp: Thu Oct 30 04:06:40 UTC 2025
+Throughput: 8048.61 req/s
+Latency p50: 12ms
+Latency p95: 15ms
+Latency p99: 17ms
+Completed: 1000
+Failed: 0
+---

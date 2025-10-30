@@ -1,0 +1,944 @@
+
+╔════════════════════════════════════════════════════════╗
+║                                                        ║
+║        SUITE COMPLETA DE PRUEBAS - HTTP SERVER        ║
+║                                                        ║
+╚════════════════════════════════════════════════════════╝
+
+Timestamp: Thu Oct 30 04:04:20 UTC 2025
+Log file: test_results/test_suite_20251030_040420.log
+
+════════════════════════════════════════════════════════
+FASE 1: Compilación del servidor
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Limpiando archivos compilados...
+[0;32m✅ Limpieza completada[0m 
+make[1]: Leaving directory '/app'
+make[1]: Entering directory '/app'
+[0;34mCompilando servidor HTTP...[0m 
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+[0;32m✅ Servidor compilado: ./build/http_server[0m 
+
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (4s)
+
+════════════════════════════════════════════════════════
+FASE 2: Tests unitarios - String Utils
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Compilando test_string_utils...
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de String Utils[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║       HTTP Server - Test Suite: String Utils              ║
+╚════════════════════════════════════════════════════════════╝
+
+🔤 Test Suite: String Utils
+==========================================
+  Running: test_url_decode_simple ... ✅ PASS
+  Running: test_url_decode_spaces ... ✅ PASS
+  Running: test_url_decode_percent ... ✅ PASS
+  Running: test_url_decode_special_chars ... ✅ PASS
+  Running: test_url_decode_empty ... ✅ PASS
+  Running: test_url_decode_null ... ✅ PASS
+  Running: test_trim_no_whitespace ... ✅ PASS
+  Running: test_trim_leading ... ✅ PASS
+  Running: test_trim_trailing ... ✅ PASS
+  Running: test_trim_both ... ✅ PASS
+  Running: test_trim_only_whitespace ... ✅ PASS
+  Running: test_str_split_simple ... ✅ PASS
+  Running: test_str_split_single ... ✅ PASS
+  Running: test_str_split_empty ... ✅ PASS
+  Running: test_parse_query_simple ... ✅ PASS
+  Running: test_parse_query_multiple ... ✅ PASS
+  Running: test_parse_query_url_encoded ... ✅ PASS
+  Running: test_parse_query_empty ... ✅ PASS
+  Running: test_parse_query_null ... ✅ PASS
+  Running: test_parse_query_no_value ... ✅ PASS
+  Running: test_get_query_param_exists ... ✅ PASS
+  Running: test_get_query_param_not_exists ... ✅ PASS
+  Running: test_get_query_param_int_valid ... ✅ PASS
+  Running: test_get_query_param_int_negative ... ✅ PASS
+  Running: test_get_query_param_int_invalid ... ✅ PASS
+  Running: test_get_query_param_int_not_exists ... ✅ PASS
+  Running: test_get_query_param_long_valid ... ✅ PASS
+  Running: test_get_query_param_long_not_exists ... ✅ PASS
+
+
+╔════════════════════════════════════════════════════════════╗
+║                 ✅ ALL TESTS PASSED                        ║
+╚════════════════════════════════════════════════════════════╝
+
+[0;32m✅ Tests de String Utils: PASSED[0m 
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (1s)
+
+════════════════════════════════════════════════════════
+FASE 3: Tests unitarios - Queue
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Compilando test_queue...
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Queue[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║         HTTP Server - Test Suite: Queue                   ║
+╔════════════════════════════════════════════════════════════╗
+
+
+📦 Test Suite: Queue (Thread-Safe)
+==========================================
+  Running: test_queue_create ... ✅ PASS
+  Running: test_queue_create_unlimited ... ✅ PASS
+  Running: test_task_create ... ✅ PASS
+  Running: test_task_create_null_query ... ✅ PASS
+  Running: test_enqueue_dequeue_single ... ✅ PASS
+  Running: test_enqueue_dequeue_multiple ... ✅ PASS
+  Running: test_enqueue_full_no_wait ... ✅ PASS
+  Running: test_enqueue_full_with_timeout ... ✅ PASS
+  Running: test_dequeue_empty_timeout ... ✅ PASS
+  Running: test_shutdown_dequeue_returns_null ... ✅ PASS
+  Running: test_shutdown_enqueue_fails ... ✅ PASS
+  Running: test_queue_stats ... ✅ PASS
+  Running: test_concurrent_multiple_producers ... ✅ PASS
+  Running: test_concurrent_producer_consumer ... ✅ PASS
+  Running: test_concurrent_backpressure ... ✅ PASS
+  Running: test_stress_high_concurrency ... ✅ PASS
+
+
+╔════════════════════════════════════════════════════════════╗
+║                 ✅ ALL TESTS PASSED                        ║
+╚════════════════════════════════════════════════════════════╝
+
+[0;32m✅ Tests de Queue: PASSED[0m 
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (52s)
+
+════════════════════════════════════════════════════════
+FASE 4: Tests unitarios - Worker Pool
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Compilando test_worker_pool...
+tests/test_worker_pool.c: In function 'simple_handler':
+tests/test_worker_pool.c:17:28: warning: unused parameter 'task' [-Wunused-parameter]
+   17 | int simple_handler(task_t *task, void *user_ctx) {
+      |                    ~~~~~~~~^~~~
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Worker Pool[0m 
+[0;32m=========================================[0m 
+All tasks processed: 20
+[0;32m✅ Tests de Worker Pool: PASSED[0m 
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (4s)
+
+════════════════════════════════════════════════════════
+FASE 5: Tests unitarios - Job Manager
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Compilando test_job_manager...
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Job Manager[0m 
+[0;32m=========================================[0m 
+  Running: test_job_submit_and_status ... ✅ PASS
+  Running: test_job_mark_running_and_done ... ✅ PASS
+  Running: test_job_mark_error_and_get_result ... ✅ PASS
+  Running: test_job_cancel ... ✅ PASS
+
+==========================================
+📊 TEST SUMMARY
+==========================================
+Total Assertions: 17
+✅ Passed: 17
+❌ Failed: 0
+Pass Rate: 100.00%
+==========================================
+🎉 ALL TESTS PASSED!
+
+[0;32m✅ Tests de Job Manager: PASSED[0m 
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (4s)
+
+════════════════════════════════════════════════════════
+FASE 6: Tests unitarios - HTTP Parser
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Compilando test_http_parser...
+In file included from tests/test_http_parser.c:1:
+tests/test_http_parser.c: In function 'test_split_uri_with_query':
+tests/test_utils.h:53:50: warning: the address of 'path' will always evaluate as 'true' [-Waddress]
+   53 |                     __FILE__, __LINE__, (b), (a) ? (a) : "NULL"); \
+      |                                                  ^
+tests/test_http_parser.c:110:5: note: in expansion of macro 'ASSERT_STR_EQ'
+  110 |     ASSERT_STR_EQ(path, "/isprime");
+      |     ^~~~~~~~~~~~~
+tests/test_utils.h:53:50: warning: the address of 'query' will always evaluate as 'true' [-Waddress]
+   53 |                     __FILE__, __LINE__, (b), (a) ? (a) : "NULL"); \
+      |                                                  ^
+tests/test_http_parser.c:111:5: note: in expansion of macro 'ASSERT_STR_EQ'
+  111 |     ASSERT_STR_EQ(query, "n=97");
+      |     ^~~~~~~~~~~~~
+tests/test_http_parser.c: In function 'test_split_uri_without_query':
+tests/test_utils.h:53:50: warning: the address of 'path' will always evaluate as 'true' [-Waddress]
+   53 |                     __FILE__, __LINE__, (b), (a) ? (a) : "NULL"); \
+      |                                                  ^
+tests/test_http_parser.c:120:5: note: in expansion of macro 'ASSERT_STR_EQ'
+  120 |     ASSERT_STR_EQ(path, "/status");
+      |     ^~~~~~~~~~~~~
+tests/test_utils.h:53:50: warning: the address of 'query' will always evaluate as 'true' [-Waddress]
+   53 |                     __FILE__, __LINE__, (b), (a) ? (a) : "NULL"); \
+      |                                                  ^
+tests/test_http_parser.c:121:5: note: in expansion of macro 'ASSERT_STR_EQ'
+  121 |     ASSERT_STR_EQ(query, "");
+      |     ^~~~~~~~~~~~~
+tests/test_http_parser.c: In function 'test_split_uri_complex':
+tests/test_utils.h:53:50: warning: the address of 'path' will always evaluate as 'true' [-Waddress]
+   53 |                     __FILE__, __LINE__, (b), (a) ? (a) : "NULL"); \
+      |                                                  ^
+tests/test_http_parser.c:130:5: note: in expansion of macro 'ASSERT_STR_EQ'
+  130 |     ASSERT_STR_EQ(path, "/test");
+      |     ^~~~~~~~~~~~~
+tests/test_utils.h:53:50: warning: the address of 'query' will always evaluate as 'true' [-Waddress]
+   53 |                     __FILE__, __LINE__, (b), (a) ? (a) : "NULL"); \
+      |                                                  ^
+tests/test_http_parser.c:131:5: note: in expansion of macro 'ASSERT_STR_EQ'
+  131 |     ASSERT_STR_EQ(query, "a=1&b=2&c=3");
+      |     ^~~~~~~~~~~~~
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de HTTP Parser[0m 
+[0;32m=========================================[0m 
+
+📦 Test Suite: HTTP Parser
+==========================================
+  Running: test_parse_simple_get ... ✅ PASS
+  Running: test_parse_get_with_query ... ✅ PASS
+  Running: test_parse_with_headers ... ✅ PASS
+  Running: test_parse_complex_query ... ✅ PASS
+  Running: test_parse_malformed_no_version ... ✅ PASS
+  Running: test_parse_malformed_no_crlf ... ✅ PASS
+  Running: test_parse_http_1_1 ... ✅ PASS
+  Running: test_split_uri_with_query ... ✅ PASS
+  Running: test_split_uri_without_query ... ✅ PASS
+  Running: test_split_uri_complex ... ✅ PASS
+  Running: test_method_get_supported ... ✅ PASS
+  Running: test_method_head_supported ... ✅ PASS
+  Running: test_method_post_not_supported ... ✅ PASS
+  Running: test_method_put_not_supported ... ✅ PASS
+  Running: test_status_text_200 ... ✅ PASS
+  Running: test_status_text_404 ... ✅ PASS
+  Running: test_status_text_500 ... ✅ PASS
+  Running: test_status_text_503 ... ✅ PASS
+  Running: test_path_safe_normal ... ✅ PASS
+  Running: test_path_unsafe_dotdot ... ✅ PASS
+  Running: test_path_unsafe_trailing_dotdot ... ✅ PASS
+  Running: test_content_type_html ... ✅ PASS
+  Running: test_content_type_json ... ✅ PASS
+  Running: test_content_type_txt ... ✅ PASS
+  Running: test_content_type_unknown ... ✅ PASS
+  Running: test_content_type_no_extension ... ✅ PASS
+
+[0;32m✅ Tests de HTTP Parser: PASSED[0m 
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (4s)
+
+════════════════════════════════════════════════════════
+FASE 7: Tests unitarios - Metrics
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+Compilando test_metrics...
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Metrics[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║         HTTP Server - Test Suite: Metrics                  ║
+╔════════════════════════════════════════════════════════════╗
+
+
+📦 Test Suite: Metrics System
+==========================================
+  Running: test_metrics_init ... ✅ PASS
+  Running: test_metrics_register_command ... ✅ PASS
+  Running: test_metrics_register_duplicate ... ✅ PASS
+  Running: test_metrics_record_wait_time ... ✅ PASS
+  Running: test_metrics_record_exec_time ... ✅ PASS
+  Running: test_metrics_update_queue_size ... ✅ PASS
+  Running: test_metrics_update_workers ... ✅ PASS
+  Running: test_metrics_stddev_calculation ... ✅ PASS
+  Running: test_metrics_stddev_wait_time ... ✅ PASS
+  Running: test_metrics_get_json_empty ... ✅ PASS
+  Running: test_metrics_get_json_with_commands ... ✅ PASS
+  Running: test_metrics_command_not_found ... ✅ PASS
+  Running: test_metrics_no_data ... ✅ PASS
+  Running: test_metrics_buffer_overflow ... ✅ PASS
+
+
+╔════════════════════════════════════════════════════════════╗
+║                 ✅ ALL TESTS PASSED                        ║
+╚════════════════════════════════════════════════════════════╝
+
+[0;32m✅ Tests de Metrics: PASSED[0m 
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (4s)
+
+════════════════════════════════════════════════════════
+FASE 8: Análisis de cobertura de código
+════════════════════════════════════════════════════════
+
+make[1]: Entering directory '/app'
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de String Utils[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║       HTTP Server - Test Suite: String Utils              ║
+╚════════════════════════════════════════════════════════════╝
+
+🔤 Test Suite: String Utils
+==========================================
+  Running: test_url_decode_simple ... ✅ PASS
+  Running: test_url_decode_spaces ... ✅ PASS
+  Running: test_url_decode_percent ... ✅ PASS
+  Running: test_url_decode_special_chars ... ✅ PASS
+  Running: test_url_decode_empty ... ✅ PASS
+  Running: test_url_decode_null ... ✅ PASS
+  Running: test_trim_no_whitespace ... ✅ PASS
+  Running: test_trim_leading ... ✅ PASS
+  Running: test_trim_trailing ... ✅ PASS
+  Running: test_trim_both ... ✅ PASS
+  Running: test_trim_only_whitespace ... ✅ PASS
+  Running: test_str_split_simple ... ✅ PASS
+  Running: test_str_split_single ... ✅ PASS
+  Running: test_str_split_empty ... ✅ PASS
+  Running: test_parse_query_simple ... ✅ PASS
+  Running: test_parse_query_multiple ... ✅ PASS
+  Running: test_parse_query_url_encoded ... ✅ PASS
+  Running: test_parse_query_empty ... ✅ PASS
+  Running: test_parse_query_null ... ✅ PASS
+  Running: test_parse_query_no_value ... ✅ PASS
+  Running: test_get_query_param_exists ... ✅ PASS
+  Running: test_get_query_param_not_exists ... ✅ PASS
+  Running: test_get_query_param_int_valid ... ✅ PASS
+  Running: test_get_query_param_int_negative ... ✅ PASS
+  Running: test_get_query_param_int_invalid ... ✅ PASS
+  Running: test_get_query_param_int_not_exists ... ✅ PASS
+  Running: test_get_query_param_long_valid ... ✅ PASS
+  Running: test_get_query_param_long_not_exists ... ✅ PASS
+
+
+╔════════════════════════════════════════════════════════════╗
+║                 ✅ ALL TESTS PASSED                        ║
+╚════════════════════════════════════════════════════════════╝
+
+[0;32m✅ Tests de String Utils: PASSED[0m 
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Queue[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║         HTTP Server - Test Suite: Queue                   ║
+╔════════════════════════════════════════════════════════════╗
+
+
+📦 Test Suite: Queue (Thread-Safe)
+==========================================
+  Running: test_queue_create ... ✅ PASS
+  Running: test_queue_create_unlimited ... ✅ PASS
+  Running: test_task_create ... ✅ PASS
+  Running: test_task_create_null_query ... ✅ PASS
+  Running: test_enqueue_dequeue_single ... ✅ PASS
+  Running: test_enqueue_dequeue_multiple ... ✅ PASS
+  Running: test_enqueue_full_no_wait ... ✅ PASS
+  Running: test_enqueue_full_with_timeout ... ✅ PASS
+  Running: test_dequeue_empty_timeout ... ✅ PASS
+  Running: test_shutdown_dequeue_returns_null ... ✅ PASS
+  Running: test_shutdown_enqueue_fails ... ✅ PASS
+  Running: test_queue_stats ... ✅ PASS
+  Running: test_concurrent_multiple_producers ... ✅ PASS
+  Running: test_concurrent_producer_consumer ... ✅ PASS
+  Running: test_concurrent_backpressure ... ✅ PASS
+  Running: test_stress_high_concurrency ... ✅ PASS
+
+
+╔════════════════════════════════════════════════════════════╗
+║                 ✅ ALL TESTS PASSED                        ║
+╚════════════════════════════════════════════════════════════╝
+
+[0;32m✅ Tests de Queue: PASSED[0m 
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Worker Pool[0m 
+[0;32m=========================================[0m 
+All tasks processed: 20
+[0;32m✅ Tests de Worker Pool: PASSED[0m 
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Job Manager[0m 
+[0;32m=========================================[0m 
+  Running: test_job_submit_and_status ... ✅ PASS
+  Running: test_job_mark_running_and_done ... ✅ PASS
+  Running: test_job_mark_error_and_get_result ... ✅ PASS
+  Running: test_job_cancel ... ✅ PASS
+
+==========================================
+📊 TEST SUMMARY
+==========================================
+Total Assertions: 17
+✅ Passed: 17
+❌ Failed: 0
+Pass Rate: 100.00%
+==========================================
+🎉 ALL TESTS PASSED!
+
+[0;32m✅ Tests de Job Manager: PASSED[0m 
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de HTTP Parser[0m 
+[0;32m=========================================[0m 
+
+📦 Test Suite: HTTP Parser
+==========================================
+  Running: test_parse_simple_get ... ✅ PASS
+  Running: test_parse_get_with_query ... ✅ PASS
+  Running: test_parse_with_headers ... ✅ PASS
+  Running: test_parse_complex_query ... ✅ PASS
+  Running: test_parse_malformed_no_version ... ✅ PASS
+  Running: test_parse_malformed_no_crlf ... ✅ PASS
+  Running: test_parse_http_1_1 ... ✅ PASS
+  Running: test_split_uri_with_query ... ✅ PASS
+  Running: test_split_uri_without_query ... ✅ PASS
+  Running: test_split_uri_complex ... ✅ PASS
+  Running: test_method_get_supported ... ✅ PASS
+  Running: test_method_head_supported ... ✅ PASS
+  Running: test_method_post_not_supported ... ✅ PASS
+  Running: test_method_put_not_supported ... ✅ PASS
+  Running: test_status_text_200 ... ✅ PASS
+  Running: test_status_text_404 ... ✅ PASS
+  Running: test_status_text_500 ... ✅ PASS
+  Running: test_status_text_503 ... ✅ PASS
+  Running: test_path_safe_normal ... ✅ PASS
+  Running: test_path_unsafe_dotdot ... ✅ PASS
+  Running: test_path_unsafe_trailing_dotdot ... ✅ PASS
+  Running: test_content_type_html ... ✅ PASS
+  Running: test_content_type_json ... ✅ PASS
+  Running: test_content_type_txt ... ✅ PASS
+  Running: test_content_type_unknown ... ✅ PASS
+  Running: test_content_type_no_extension ... ✅ PASS
+
+[0;32m✅ Tests de HTTP Parser: PASSED[0m 
+
+[0;32m=========================================[0m 
+[0;32m  Ejecutando Tests de Metrics[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║         HTTP Server - Test Suite: Metrics                  ║
+╔════════════════════════════════════════════════════════════╗
+
+
+📦 Test Suite: Metrics System
+==========================================
+  Running: test_metrics_init ... ✅ PASS
+  Running: test_metrics_register_command ... ✅ PASS
+  Running: test_metrics_register_duplicate ... ✅ PASS
+  Running: test_metrics_record_wait_time ... ✅ PASS
+  Running: test_metrics_record_exec_time ... ✅ PASS
+  Running: test_metrics_update_queue_size ... ✅ PASS
+  Running: test_metrics_update_workers ... ✅ PASS
+  Running: test_metrics_stddev_calculation ... ✅ PASS
+  Running: test_metrics_stddev_wait_time ... ✅ PASS
+  Running: test_metrics_get_json_empty ... ✅ PASS
+  Running: test_metrics_get_json_with_commands ... ✅ PASS
+  Running: test_metrics_command_not_found ... ✅ PASS
+  Running: test_metrics_no_data ... ✅ PASS
+  Running: test_metrics_buffer_overflow ... ✅ PASS
+
+
+╔════════════════════════════════════════════════════════════╗
+║                 ✅ ALL TESTS PASSED                        ║
+╚════════════════════════════════════════════════════════════╝
+
+[0;32m✅ Tests de Metrics: PASSED[0m 
+Compilando test_race_conditions...
+tests/test_race_conditions.c: In function 'main':
+tests/test_race_conditions.c:315:14: warning: unused parameter 'argc' [-Wunused-parameter]
+  315 | int main(int argc, char **argv) {
+      |          ~~~~^~~~
+tests/test_race_conditions.c:315:27: warning: unused parameter 'argv' [-Wunused-parameter]
+  315 | int main(int argc, char **argv) {
+      |                    ~~~~~~~^~~~
+src/commands/cpu_bound/isprime.c:76:13: warning: 'is_prime_trial_division' defined but not used [-Wunused-function]
+   76 | static bool is_prime_trial_division(uint64_t n) {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+src/commands/io_bound/wordcount.c: In function 'handle_wordcount':
+src/commands/io_bound/wordcount.c:122:10: warning: unused variable 'file_size' [-Wunused-variable]
+  122 |     long file_size = (long)st.st_size;
+      |          ^~~~~~~~~
+
+[0;32m=========================================[0m 
+[0;32m  Test de Race Conditions[0m 
+[0;32m=========================================[0m 
+
+╔════════════════════════════════════════════════════════════╗
+║     TEST DE CONCURRENCIA Y RACE CONDITIONS                 ║
+╚════════════════════════════════════════════════════════════╝
+
+⚠️  IMPORTANTE: Debe estar corriendo el servidor en puerto 8080
+   Ejecutar antes: ./build/http_server 8080
+
+Verificando conexión al servidor...
+✅ Servidor detectado
+
+========================================
+TEST: 10 clientes concurrentes, 10 requests c/u
+========================================
+Creando 10 threads...
+Esperando a que terminen todos los clientes...
+
+--- RESULTADOS ---
+Total requests:  100
+Exitosos:        86 (86.00%)
+Errores:         14 (14.00%)
+Tiempo total:    37.36 ms
+Throughput:      2676.76 req/s
+
+⚠️  ADVERTENCIA: Tasa de error alta (14.00%).
+   Posible race condition o deadlock.
+
+========================================
+TEST: 50 clientes concurrentes, 5 requests c/u
+========================================
+Creando 50 threads...
+Esperando a que terminen todos los clientes...
+
+--- RESULTADOS ---
+Total requests:  250
+Exitosos:        214 (85.60%)
+Errores:         36 (14.40%)
+Tiempo total:    26.53 ms
+Throughput:      9424.57 req/s
+
+⚠️  ADVERTENCIA: Tasa de error alta (14.40%).
+   Posible race condition o deadlock.
+
+========================================
+TEST: 100 clientes concurrentes, 3 requests c/u
+========================================
+Creando 100 threads...
+Esperando a que terminen todos los clientes...
+
+--- RESULTADOS ---
+Total requests:  300
+Exitosos:        268 (89.33%)
+Errores:         32 (10.67%)
+Tiempo total:    44.78 ms
+Throughput:      6699.44 req/s
+
+⚠️  ADVERTENCIA: Tasa de error alta (10.67%).
+   Posible race condition o deadlock.
+
+========================================
+TEST: Burst de conexiones (sin pausa)
+========================================
+Creando 50 threads simultáneamente...
+
+--- RESULTADOS BURST ---
+Total requests:  500
+Exitosos:        429
+Errores:         71
+
+⚠️  Alta tasa de error en burst - posible problema de concurrencia
+
+========================================
+TEST: Consistencia de /metrics bajo carga
+========================================
+Consultando /metrics desde 20 clientes simultáneos...
+✅ /metrics respondió correctamente después de carga concurrente
+
+╔════════════════════════════════════════════════════════════╗
+║              TESTS DE CONCURRENCIA COMPLETADOS             ║
+╚════════════════════════════════════════════════════════════╝
+
+📝 Para detectar race conditions más profundas, ejecutar:
+   valgrind --tool=helgrind ./build/http_server 8080
+   valgrind --tool=drd ./build/http_server 8080
+
+[0;32m✅ Tests de Race Conditions: PASSED[0m 
+
+[0;32m=========================================[0m 
+[0;32m  🎉 TODOS LOS TESTS PASARON[0m 
+[0;32m=========================================[0m 
+
+
+==========================================
+  Generando Reporte de Cobertura
+==========================================
+
+Generando reportes con gcov...
+
+Archivos .gcov generados: 12
+
+==========================================================
+          REPORTE DE COBERTURA
+==========================================================
+
+=== UTILS ===
+  [-] logger.c                         0% (0/41)
+  [-] string_utils.c                   0% (0/102)
+  [-] timer.c                          0% (0/16)
+  [-] uuid.c                           0% (0/10)
+  ----------------------------------------------------------
+  Total: 0% (0/169 lines, 4 archivos)
+
+=== CORE ===
+  [-] job_executor.c                   0% (0/236)
+  [-] job_manager.c                    0% (0/151)
+  [-] metrics.c                        0% (0/187)
+  [-] queue.c                          0% (0/190)
+  [-] worker_pool.c                    0% (0/80)
+  ----------------------------------------------------------
+  Total: 0% (0/844 lines, 5 archivos)
+
+=== SERVER ===
+  [-] http.c                          47% (76/159)
+  [-] server.c                         0% (0/212)
+  ----------------------------------------------------------
+  Total: 20% (76/371 lines, 2 archivos)
+
+=== ROUTER ===
+  [-] router.c                         0% (0/424)
+  ----------------------------------------------------------
+  Total: 0% (0/424 lines, 1 archivos)
+
+==========================================================
+COBERTURA TOTAL: 4% (76/1808 lines)
+==========================================================
+
+Leyenda: [+] 90%+  [~] 70-89%  [.] 50-69%  [-] <50%
+
+Ver detalles: cat coverage/<archivo>.c.gcov | less
+
+make[1]: Leaving directory '/app'
+[0;32m✅ PASSED[0m (59s)
+
+════════════════════════════════════════════════════════
+FASE: Tests de Integración (servidor en background)
+════════════════════════════════════════════════════════
+
+Iniciando servidor...
+[2025-10-30 04:06:33] [INFO ] [main.c:50] ===========================================
+[2025-10-30 04:06:33] [INFO ] [main.c:51]   HTTP Server v1.0
+[2025-10-30 04:06:33] [INFO ] [main.c:52] ===========================================
+[2025-10-30 04:06:33] [INFO ] [main.c:53] PID: 6020
+[2025-10-30 04:06:33] [INFO ] [main.c:56] Initializing Job Manager...
+[2025-10-30 04:06:33] [INFO ] [main.c:64] Initializing Job Executor (4 workers, queue depth: 100)...
+[2025-10-30 04:06:33] [INFO ] [main.c:73] Initializing Metrics System...
+[2025-10-30 04:06:33] [INFO ] [server.c:85] Metrics system initialized with 18 commands
+[2025-10-30 04:06:33] [ERROR] [server.c:113] Failed to bind to port 8080: Address already in use
+[2025-10-30 04:06:33] [ERROR] [main.c:88] Failed to initialize server
+[0;32m✓ Servidor iniciado correctamente (PID: 6020)[0m
+
+════════════════════════════════════════════════════════
+FASE 9: Tests de concurrencia y race conditions
+════════════════════════════════════════════════════════
+
+scripts/run_all_tests.sh: line 55: ./scripts/test_race_conditions_integration.sh: No such file or directory
+[1;33m⊘ SKIPPED[0m (no crítico)
+
+════════════════════════════════════════════════════════
+FASE 10: Tests de comandos CPU-bound
+════════════════════════════════════════════════════════
+
+
+==========================================
+  PRUEBAS AUTOMATICAS CPU-BOUND
+==========================================
+
+✓ Servidor disponible
+
+Ejecutando pruebas...
+
+PI: 10 dígitos...                                 ✓ PASSED (9ms)
+PI: 15 dígitos...                                 ✓ PASSED (9ms)
+MANDELBROT: 50x50, 100 iter...                     ✓ PASSED (9ms)
+MANDELBROT: 100x100, 100 iter...                   ✓ PASSED (10ms)
+MANDELBROT: 200x200, 500 iter...                   ✓ PASSED (18ms)
+MANDELBROT: 300x300, 500 iter...                   ✓ PASSED (29ms)
+MATRIXMUL: 50x50...                                ✓ PASSED (9ms)
+MATRIXMUL: 100x100...                              ✓ PASSED (8ms)
+MATRIXMUL: 150x150...                              ✓ PASSED (9ms)
+MATRIXMUL: 200x200...                              ✓ PASSED (11ms)
+
+Tests de carga pesada (pueden tardar varios segundos):
+MANDELBROT: 400x400, 1000 iter...                  ✓ PASSED (74ms)
+MATRIXMUL: 300x300...                              ✓ PASSED (15ms)
+
+==========================================
+  RESULTADOS
+==========================================
+Tests exitosos: 12
+Tests fallidos: 0
+Total: 12
+
+✓ Todos los tests pasaron
+[0;32m✅ PASSED[0m (0s)
+
+════════════════════════════════════════════════════════
+FASE 11: Benchmark y análisis de métricas
+════════════════════════════════════════════════════════
+
+
+==========================================
+  BENCHMARK DE METRICAS Y LATENCIAS
+==========================================
+
+✓ Servidor disponible
+
+╔════════════════════════════════════════════════════════╗
+║  PERFIL 1: CARGA LIGERA                                ║
+╚════════════════════════════════════════════════════════╝
+
+==========================================
+PERFIL: perfil1_ligera
+==========================================
+Descripción: Carga ligera: 100 requests, concurrencia 10
+Requests totales: 100
+Concurrencia: 10
+Endpoint: /random?min=1&max=100
+
+Ejecutando con Apache Bench (ab)...
+RESULTADOS:
+
+  Throughput: 8496.18 req/s
+  Tiempo promedio: 1.177ms
+
+  Latencias (ms):
+    p50 (mediana): 1ms
+    p95:           1ms
+    p99:           1ms
+
+  Requests completados: 100
+  Requests fallidos: 0
+
+
+╔════════════════════════════════════════════════════════╗
+║  PERFIL 2: CARGA MEDIA                                 ║
+╚════════════════════════════════════════════════════════╝
+
+==========================================
+PERFIL: perfil2_media
+==========================================
+Descripción: Carga media: 500 requests, concurrencia 50
+Requests totales: 500
+Concurrencia: 50
+Endpoint: /isprime?n=97
+
+Ejecutando con Apache Bench (ab)...
+RESULTADOS:
+
+  Throughput: 8402.09 req/s
+  Tiempo promedio: 5.951ms
+
+  Latencias (ms):
+    p50 (mediana): 6ms
+    p95:           7ms
+    p99:           8ms
+
+  Requests completados: 500
+  Requests fallidos: 0
+
+
+╔════════════════════════════════════════════════════════╗
+║  PERFIL 3: CARGA ALTA (STRESS)                         ║
+╚════════════════════════════════════════════════════════╝
+
+==========================================
+PERFIL: perfil3_alta
+==========================================
+Descripción: Carga alta: 1000 requests, concurrencia 100
+Requests totales: 1000
+Concurrencia: 100
+Endpoint: /factor?n=123456
+
+Ejecutando con Apache Bench (ab)...
+RESULTADOS:
+
+  Throughput: 8048.61 req/s
+  Tiempo promedio: 12.425ms
+
+  Latencias (ms):
+    p50 (mediana): 12ms
+    p95:           15ms
+    p99:           17ms
+
+  Requests completados: 1000
+  Requests fallidos: 0
+
+
+==========================================
+  RESUMEN DE TODOS LOS PERFILES
+==========================================
+
+Profile: perfil1_ligera
+Timestamp: Thu Oct 30 03:56:26 UTC 2025
+Throughput: 8314.63 req/s
+Latency p50: 1ms
+Latency p95: 1ms
+Latency p99: 2ms
+Completed: 100
+Failed: 0
+---
+Profile: perfil2_media
+Timestamp: Thu Oct 30 03:56:29 UTC 2025
+Throughput: 8678.90 req/s
+Latency p50: 6ms
+Latency p95: 7ms
+Latency p99: 8ms
+Completed: 500
+Failed: 0
+---
+Profile: perfil3_alta
+Timestamp: Thu Oct 30 03:56:31 UTC 2025
+Throughput: 7043.69 req/s
+Latency p50: 11ms
+Latency p95: 41ms
+Latency p99: 43ms
+Completed: 1000
+Failed: 0
+---
+Profile: perfil1_ligera
+Timestamp: Thu Oct 30 04:06:36 UTC 2025
+Throughput: 8496.18 req/s
+Latency p50: 1ms
+Latency p95: 1ms
+Latency p99: 1ms
+Completed: 100
+Failed: 0
+---
+Profile: perfil2_media
+Timestamp: Thu Oct 30 04:06:38 UTC 2025
+Throughput: 8402.09 req/s
+Latency p50: 6ms
+Latency p95: 7ms
+Latency p99: 8ms
+Completed: 500
+Failed: 0
+---
+Profile: perfil3_alta
+Timestamp: Thu Oct 30 04:06:40 UTC 2025
+Throughput: 8048.61 req/s
+Latency p50: 12ms
+Latency p95: 15ms
+Latency p99: 17ms
+Completed: 1000
+Failed: 0
+---
+
+Resultados guardados en: benchmark_results/
+
+Ver métricas del servidor:
+  curl http://localhost:8080/metrics
+
+[0;32m✅ PASSED[0m (4s)
+
+Deteniendo servidor...
+
+
+╔════════════════════════════════════════════════════════╗
+║                                                        ║
+║                  RESUMEN DE PRUEBAS                    ║
+║                                                        ║
+╚════════════════════════════════════════════════════════╝
+
+Test                                               Resultado  Tiempo    
+────────────────────────────────────────────────────────────────────
+Compilación del servidor                          [0;32m✅ PASSED[0m4s
+Tests unitarios - String Utils                     [0;32m✅ PASSED[0m1s
+Tests unitarios - Queue                            [0;32m✅ PASSED[0m52s
+Tests unitarios - Worker Pool                      [0;32m✅ PASSED[0m4s
+Tests unitarios - Job Manager                      [0;32m✅ PASSED[0m4s
+Tests unitarios - HTTP Parser                      [0;32m✅ PASSED[0m4s
+Tests unitarios - Metrics                          [0;32m✅ PASSED[0m4s
+Análisis de cobertura de código                  [0;32m✅ PASSED[0m59s
+Tests de concurrencia y race conditions            [1;33m⊘ SKIPPED[0m0s
+Tests de comandos CPU-bound                        [0;32m✅ PASSED[0m0s
+Benchmark y análisis de métricas                 [0;32m✅ PASSED[0m4s
+
+────────────────────────────────────────────────────────────────────
+
+ESTADÍSTICAS:
+  Total de pruebas:    11
+  [0;32mExitosas:            10[0m
+  [0;31mFallidas:            0[0m
+  [1;33mOmitidas:            1[0m
+  Tasa de éxito:       90%
+
+ARCHIVOS GENERADOS:
+  Log completo:        test_results/test_suite_20251030_040420.log
+  Cobertura:           coverage/
+  Benchmarks:          benchmark_results/
+
+╔════════════════════════════════════════════════════════╗
+║                                                        ║
+║  [0;32m✅  TODAS LAS PRUEBAS CRÍTICAS PASARON[0m              ║
+║                                                        ║
+╚════════════════════════════════════════════════════════╝

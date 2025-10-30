@@ -249,6 +249,15 @@ cat benchmark_results/summary.txt
 ls -lh benchmark_results/
 ```
 
+# Ejecutar TODAS las pruebas con un solo comando
+```bash
+# Dar permisos
+chmod +x scripts/run_all_tests.sh
+chmod +x scripts/test_race_conditions_integration.sh
+# Ejecutar
+make test-all
+```
+
 ## 🐛 Troubleshooting
 
 ### El servidor no inicia

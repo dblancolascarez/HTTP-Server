@@ -98,26 +98,28 @@ help:
 	@echo "  HTTP Server - Makefile"
 	@echo "=========================================="
 	@echo ""
-	@echo "Targets disponibles:"
+	@echo "$(BLUE)Targets principales:$(NC)"
 	@echo "  $(GREEN)make server$(NC)             - Compilar servidor HTTP"
 	@echo "  $(GREEN)make run$(NC)                - Compilar y ejecutar servidor"
+	@echo "  $(GREEN)make test-all$(NC)           - 🎯 EJECUTAR TODAS LAS PRUEBAS"
 	@echo ""
-	@echo "  $(BLUE)Tests:$(NC)"
+	@echo "$(BLUE)Tests unitarios:$(NC)"
+	@echo "  $(GREEN)make test$(NC)               - Tests unitarios básicos"
 	@echo "  $(GREEN)make test_queue$(NC)         - Tests de queue"
 	@echo "  $(GREEN)make test_string$(NC)        - Tests de string_utils"
-	@echo "  $(GREEN)make test_worker_pool$(NC)   - Tests de worker pool"
-	@echo "  $(GREEN)make test_job_manager$(NC)   - Tests de job manager"
 	@echo "  $(GREEN)make test_http$(NC)          - Tests de HTTP parser"
-	@echo "  $(GREEN)make test_metrics$(NC)       - Tests de sistema de métricas"
-	@echo "  $(GREEN)make test_race_conditions$(NC) - Tests de concurrencia"
-	@echo "  $(GREEN)make test$(NC)               - Ejecutar TODOS los tests"
+	@echo "  $(GREEN)make test_metrics$(NC)       - Tests de métricas"
 	@echo ""
-	@echo "  $(BLUE)Cobertura:$(NC)"
-	@echo "  $(GREEN)make coverage$(NC)           - Reporte de cobertura (texto)"
-	@echo "  $(GREEN)make coverage-html$(NC)      - Reporte de cobertura (HTML)"
-	@echo "  $(GREEN)make clean-coverage$(NC)     - Limpiar archivos de cobertura"
+	@echo "$(BLUE)Tests de integración:$(NC)"
+	@echo "  $(GREEN)make test_cpu$(NC)           - Tests de comandos CPU-bound"
+	@echo "  $(GREEN)make benchmark$(NC)          - Benchmark de métricas"
 	@echo ""
+	@echo "$(BLUE)Análisis:$(NC)"
+	@echo "  $(GREEN)make coverage$(NC)           - Reporte de cobertura"
 	@echo "  $(GREEN)make clean$(NC)              - Limpiar archivos compilados"
+	@echo ""
+	@echo "$(BLUE)Herramientas:$(NC)"
+	@echo "  $(GREEN)make install-bench-tools$(NC) - Instalar herramientas de benchmark"
 	@echo ""
 
 
@@ -343,6 +345,15 @@ install-bench-tools:
 	@echo "$(GREEN)✓ Herramientas instaladas$(NC)"
 
 .PHONY: benchmark install-bench-tools
+
+# ============================================================================
+# SUITE COMPLETA DE PRUEBAS
+# ============================================================================
+
+test-all: 
+	@bash scripts/run_all_tests.sh
+
+.PHONY: test-all
 
 
 
