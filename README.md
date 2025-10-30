@@ -1,421 +1,414 @@
 # HTTP Server - Proyecto de Sistemas Operativos
 
-Servidor HTTP/1.0 con soporte para múltiples clientes concurrentes, workers especializados y sistema de jobs asíncronos.
+Servidor HTTP/1.0 implementado en C con soporte para múltiples clientes concurrentes, workers especializados por tipo de comando y un sistema de jobs asíncronos. Esta README completa describe cómo compilar y ejecutar el servidor tanto dentro de Docker como en Ubuntu/WSL, documenta todos los endpoints, muestra ejemplos reales y detalla cómo ejecutar las pruebas.
+
+## Índice
+
+- Requisitos
+- Compilación y ejecución (Docker)
+- Compilación y ejecución (Ubuntu / WSL)
+- Estructura del proyecto
+- Endpoints (descripción + ejemplos)
+- Jobs: uso (submit / status / result / cancel) y ejemplos de polling
+- Tests: ejecutar tests individuales y la suite completa
+- Generar cobertura
+- Troubleshooting y notas de implementación
+
+---
 
 ## 📋 Requisitos
 
-- GCC >= 7.0
-- Make
-- pthreads (incluido en sistemas Unix-like)
-- gcov (para cobertura de código)
-- curl (para pruebas)
+- GCC (>= 7)
+- make
+- curl
+- bash (para scripts de test y WSL)
+- jq (para formatear JSON en ejemplos)
+- (Opcional para benchmarking) wrk, apachebench (ab), bc
+
+En sistemas Debian/Ubuntu:
 
 ```bash
-# Verificar instalación
-gcc --version
-make --version
-curl --version
+sudo apt update
+sudo apt install -y build-essential make curl ca-certificates pkg-config jq
 ```
 
-## 🚀 Compilación y Ejecución
+Si quieres trabajar dentro de Docker (recomendado para entornos reproducibles) necesitas Docker & docker-compose instalados.
 
+---
+
+## Compilación y ejecución (Docker)
+
+Estos pasos crean un contenedor reproducible que contiene las herramientas necesarias y ejecuta el servidor.
+
+1) Construir la imagen:
 
 ```bash
-# 1. Construir imagen (solo la primera vez)
 docker compose build
-
-# 2. Iniciar contenedor
-docker compose up -d
-
-# 3. Entrar al contenedor
-docker compose exec http-server bash
-
-# 4. Compilar el servidor
-make server
-
-# 5. Ejecutar el servidor (puerto 8080 por defecto)
-make run
-
-# O manualmente:
-./build/http_server 8080
-
-# 6. En otra terminal, probar con curl
-curl http://localhost:8080/status
-curl http://localhost:8080/help
-
-Tambien se puede probar 
-
-# BASIC
-
-status
-curl -i 'http://127.0.0.1:8080/status'
-
-fibonacci
-curl -i 'http://127.0.0.1:8080/fibonacci?num=3'
-
-hash
-curl -i 'http://127.0.0.1:8080/hash?text=someinput'
-
-random
-curl -i 'http://127.0.0.1:8080/random?count=55&min=1&max=10'
-
-reverse
-curl -i 'http://127.0.0.1:8080/reverse?text=abcdef'
-
-toupper (percent-encoded space)
-curl -i 'http://127.0.0.1:8080/toupper?text=hola%20mundo'
-
-timestamp
-curl -i 'http://127.0.0.1:8080/timestamp'
-
-submit job (example)
-curl -i 'http://127.0.0.1:8080/jobs/submit?task=isprime&n=97'
-
-# CPU BOUND
-
-isprime
-
-factor
-curl -i 'http://127.0.0.1:8080/factor?n=60'
-
-# IO BOUND
-
-sortfile
-curl 'http://127.0.0.1:8080/createfile?name=numbers.txt&content=42%0A15%0A8%0A23%0A4%0A&repeat=1'
-curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=merge'
-curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=quick'
-
-wordcount
-curl -i 'http://127.0.0.1:8080/wordcount?name=test.txt'
-
-hashfile
-curl -i 'http://127.0.0.1:8080/hashfile?name=test.txt&algo=sha256'
-
-# FILES
-
-createfile
-curl -i 'http://127.0.0.1:8080/createfile?name=test.txt&content=Hello&repeat=3'
-
-deletefile
-curl -i 'http://127.0.0.1:8080/deletefile?name=test.txt'
-
-
 ```
 
-### Salida Esperada del Servidor
-
-```
-[2025-01-15 10:30:00] [INFO ] [main.c:45] ===========================================
-[2025-01-15 10:30:00] [INFO ] [main.c:46]   HTTP Server v1.0 - Phase 3
-[2025-01-15 10:30:00] [INFO ] [main.c:47] ===========================================
-[2025-01-15 10:30:00] [INFO ] [main.c:48] PID: 12345
-[2025-01-15 10:30:00] [INFO ] [server.c:89] Server initialized on port 8080
-[2025-01-15 10:30:00] [INFO ] [server.c:102] Server starting... PID: 12345
-[2025-01-15 10:30:00] [INFO ] [main.c:68] Server ready. Press Ctrl+C to stop.
-[2025-01-15 10:30:00] [INFO ] [main.c:69] Try: curl http://localhost:8080/status
-```
-
-### Endpoints Disponibles (Fase 3)
-
-| Endpoint | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `/status` | Estado del servidor | `curl http://localhost:8080/status` |
-| `/help` | Lista de endpoints | `curl http://localhost:8080/help` |
-
-Respuesta de `/status`:
-```json
-{
-  "status": "running",
-  "pid": 12345,
-  "uptime_seconds": 42,
-  "connections_served": 10,
-  "requests_ok": 8,
-  "requests_error": 2
-}
-```
-
-
-## 🧪 Tests Unitarios
+2) Levantar el contenedor en background:
 
 ```bash
-# 1. Ejecutar tests individuales
-make test_queue         # Tests de cola thread-safe
-make test_string        # Tests de string utils
+docker compose up -d
+```
+
+3) Entrar al contenedor (si quieres compilar/ejecutar allí):
+
+```bash
+docker compose exec http-server bash
+```
+
+Dentro del contenedor puedes compilar y ejecutar exactamente igual que en Ubuntu:
+
+```bash
+# Dentro del contenedor
+make clean
+make server
+./build/http_server 8080
+```
+
+Nota: el `docker-compose.yml` del repositorio expone el puerto 8080 por defecto.
+
+---
+
+## Compilación y ejecución (Ubuntu / WSL)
+
+En tu máquina local Ubuntu o en WSL (recomendado para desarrollo):
+
+```bash
+# Desde la raíz del repo
+make clean
+make server
+./build/http_server 8080
+```
+
+O puedes usar el objetivo Make para facilitar:
+
+```bash
+make run   # compila y ejecuta
+```
+
+Para pruebas desde la misma máquina (WSL) usa `curl` normal:
+
+```bash
+curl "http://localhost:8080/status"
+```
+
+Si trabajas en PowerShell y quieres forzar que el cliente curl se ejecute en WSL, antepone `wsl` (No recomendado):
+
+```powershell
+wsl curl "http://localhost:8080/status"
+```
+
+---
+
+## Estructura del proyecto (resumen)
+
+- `src/` - código fuente (server, router, comandos, core)
+- `data/` - datos de prueba y jobs persistidos
+- `scripts/` - scripts de test y utilidades
+- `build/` - binarios compilados
+- `tests/` - tests unitarios
+- `Makefile` - objetivos de compilación y test
+
+---
+
+## Endpoints principales (descripción y ejemplos)
+
+Todos los ejemplos usan `curl`. Reemplaza `localhost:8080` por la dirección donde corre tu servidor (opcional).
+
+### 1) Básicos
+
+- `/fibonacci?num=N`
+  - Descripción: Calcula el N-ésimo número de la secuencia de Fibonacci. Útil para demostraciones con números pequeños.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/fibonacci?num=10" | jq '.'
+```
+
+- `/createfile?name=filename&content=text&repeat=x`
+  - Descripción: Crea un archivo con el contenido especificado, repetido x veces.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/createfile?name=test.txt&content=hello&repeat=3" | jq '.'
+```
+
+- `/deletefile?name=filename`
+  - Descripción: Elimina un archivo especificado del servidor.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/deletefile?name=test.txt" | jq '.'
+```
+
+- `/status`
+  - Descripción: Muestra el estado general del servidor incluyendo uptime, PID y estadísticas.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/status" | jq '.'
+```
+
+- `/reverse?text=abcdef`
+  - Descripción: Invierte el texto proporcionado.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/reverse?text=abcdef" | jq '.'
+```
+
+- `/toupper?text=abcd`
+  - Descripción: Convierte el texto a mayúsculas.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/toupper?text=hello%20world" | jq '.'
+```
+
+- `/random?count=n&min=a&max=b`
+  - Descripción: Genera n números aleatorios entre min y max.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/random?count=5&min=1&max=100" | jq '.'
+```
+
+- `/timestamp`
+  - Descripción: Devuelve la marca de tiempo actual del servidor.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/timestamp" | jq '.'
+```
+
+- `/hash?text=someinput`
+  - Descripción: Calcula el hash SHA-256 del texto proporcionado.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/hash?text=hello" | jq '.'
+```
+
+- `/simulate?seconds=s&task=name`
+  - Descripción: Simula una tarea que toma s segundos en completarse.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/simulate?seconds=5&task=cpu" | jq '.'
+```
+
+- `/sleep?seconds=s`
+  - Descripción: Hace que el servidor espere s segundos antes de responder.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/sleep?seconds=3" | jq '.'
+```
+
+- `/loadtest?tasks=n&sleep=x`
+  - Descripción: Ejecuta n tareas simultáneas, cada una durmiendo x segundos.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/loadtest?tasks=5&sleep=2" | jq '.'
+```
+
+- `/help`
+  - Descripción: Muestra la lista de todos los endpoints disponibles.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/help"
+```
+
+### 2) CPU-bound 
+
+- `/isprime?n=NUM`
+  - Descripción: Comprueba si NUM es primo. Implementación por división hasta √n o (configurable) Miller–Rabin para números grandes.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/isprime?n=1000003" | jq '.'
+```
+
+- `/factor?n=NUM`
+  - Descripción: Factoriza NUM en primos. Devuelve un arreglo con los factores y sus multiplicidades: [{"prime":p, "count":k}, ...].
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/factor?n=360" | jq '.'
+```
+
+- `/pi?digits=D`
+  - Descripción: Calcula π con un algoritmo tipo Spigot o Chudnovsky (versión iterativa y con control de tiempo para evitar bloqueos largos). No usar D excesivamente grande en entornos limitados.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/pi?digits=10" | jq '.'
+```
+
+- `/mandelbrot?width=W&height=H&max_iter=I`
+  - Descripción: Genera un mapa de iteraciones del conjunto de Mandelbrot de tamaño W×H; devuelve una matriz de enteros (número de iteraciones por píxel) en JSON. Opcionalmente el servidor puede volcar una imagen PGM/PPM a disco y devolver el nombre del archivo.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/mandelbrot?width=80&height=60&max_iter=100" | jq '.'
+```
+
+- `/matrixmul?size=N&seed=S`
+  - Descripción: Genera dos matrices N×N pseudoaleatorias (con seed S), calcula su multiplicación y devuelve el hash SHA-256 del resultado para verificación (evita enviar matrices grandes por la red).
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/matrixmul?size=128&seed=42" | jq '.'
+```
+
+### 3) IO-bound (archivos)
+
+- `/sortfile?name=FILE&algo=merge|quick`
+  - Descripción: Ordena un archivo en disco que contiene enteros (uno por línea). Diseñado para manejar archivos grandes (>= 50MB). Retorna HTTP 200 con métricas de tiempo y ruta al archivo ordenado.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/sortfile?name=data/numbers_50mb.txt&algo=merge" | jq '.'
+```
+
+- `/wordcount?name=FILE`
+  - Descripción: Similar a wc: cuenta líneas, palabras y bytes del archivo especificado. Soporta procesamiento en streaming para archivos grandes.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/wordcount?name=data/test.txt" | jq '.'
+```
+
+- `/grep?name=FILE&pattern=REGEX`
+  - Descripción: Busca coincidencias de la expresión regular en el archivo; devuelve el número total de coincidencias y las primeras 10 líneas que coinciden (si existen).
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/grep?name=data/test.txt&pattern=ERROR" | jq '.'
+```
+
+- `/compress?name=FILE&codec=gzip|xz`
+  - Descripción: Comprime el archivo indicado usando gzip o xz. Devuelve el nombre del archivo comprimido y el tamaño en bytes.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/compress?name=data/test.txt&codec=gzip" | jq '.'
+```
+
+- `/hashfile?name=FILE&algo=sha256`
+  - Descripción: Calcula el hash del archivo y retorna el resultado en hexadecimal. Diseñado para calcular el hash en streaming para archivos grandes.
+  - Ejemplo:
+```bash
+curl -s "http://localhost:8080/hashfile?name=data/large_file.txt&algo=sha256" | jq '.'
+```
+
+---
+
+## Jobs (tareas largas)
+
+Las rutas CPU/IO soportan ejecución directa y también vía Jobs para tareas largas. Use `/jobs/*` para manejo asíncrono.
+
+- `/jobs/submit?task=TASK&<params>`
+  - Encola un job y retorna `{ "job_id": "...", "status": "queued" }`.
+  - Ejemplo (simulate 10s CPU):
+
+```bash
+curl -s "http://localhost:8080/jobs/submit?task=simulate&seconds=10&task=cpu" | jq '.'
+```
+
+> Nota: el parámetro `task` en `/jobs/submit` indica la ruta que se ejecutará (por ejemplo `simulate`, `isprime`, `sortfile`, etc.). Los parámetros dependientes del comando deben incluirse también (p. ej. `seconds=10`).
+
+- `/jobs/status?id=JOBID` → `{ "status": "queued|running|done|error|canceled", "progress":0..100, "eta_ms":... }`
+
+Ejemplo de polling (bash):
+
+```bash
+JOB_JSON=$(curl -s "http://localhost:8080/jobs/submit?task=simulate&seconds=10&task=cpu")
+JOBID=$(echo "$JOB_JSON" | sed -E 's/.*"job_id":"([^"]+)".*/\1/')
+for i in $(seq 1 12); do
+  curl -s "http://localhost:8080/jobs/status?id=$JOBID" | jq '.'
+  sleep 1
+done
+```
+
+- `/jobs/result?id=JOBID` → resultado JSON del comando si `done`, o `{ "error": "..." }` si falló.
+
+```bash
+curl -s "http://localhost:8080/jobs/result?id=$JOBID" | jq '.'
+```
+
+- `/jobs/cancel?id=JOBID` → intenta cancelar; retorna `{"status":"canceled"}` o `{"status":"not_cancelable"}`.
+
+```bash
+curl -s "http://localhost:8080/jobs/cancel?id=$JOBID" | jq '.'
+```
+
+---
+
+## Tests (unitarios & integración)
+
+El proyecto incluye tests unitarios (carpeta `tests/`) y scripts para integrar pruebas.
+
+### Compilar y ejecutar tests individuales
+
+```bash
+make test_queue        # Tests de cola thread-safe
+make test_string       # Tests de string utils
 make test_job_manager
 make test_worker_pool
-make test_http          # Tests de HTTP parser
+make test_http         # Tests de HTTP parser
 make test_metrics
-
-# 2. Ejecutar TODOS los tests
-make test
-
-# 3. Generar reporte de cobertura
-make coverage
-
-# 4. Limpiar archivos compilados
-make clean
+make test_race_conditions
 ```
 
+Cada target compila y ejecuta el test correspondiente. Si falla alguno, el `Makefile` devuelve código de error y muestra el log en consola.
 
-
-## 🔧 Pruebas Manuales con curl
+### Ejecutar todos los tests (suite completa)
 
 ```bash
-# Test básico
-curl http://localhost:8080/status
-
-# Ver headers de respuesta
-curl -v http://localhost:8080/status
-
-# Test con query string
-curl "http://localhost:8080/status?test=1"
-
-# Ver solo headers
-curl -I http://localhost:8080/status
-
-# Test de error 404
-curl http://localhost:8080/notfound
-
-# Test de path inseguro (debe retornar 400)
-curl "http://localhost:8080/../etc/passwd"
-
-# Múltiples requests concurrentes
-for i in {1..10}; do curl -s http://localhost:8080/status & done
+make test   # compila y ejecuta los tests unitarios listados en el Makefile
 ```
 
-### Script de Prueba Automatizado
+O bien usar el orquestador:
 
 ```bash
-# Hacer el script ejecutable
-chmod +x scripts/test_server.sh
-
-# Ejecutar (el servidor debe estar corriendo)
-./scripts/test_server.sh 8080
-```
-
-## 📊 Cobertura de Código
-
-Meta del proyecto: **≥ 90%**
-
-```bash
-# Limpiar
-make clean
-
-# Ejecutar tests
-make test
-
-# Generar cobertura
-make coverage
-```
-
-## 📊 Pruebas de Rendimiento
-Meta del proyecto: **≥ 90%**
-
-```bash
-#1. El servidor debe estar corriendo
-#2. Instalar lo siguiente en terminal
-apt-get update && apt-get install -y netcat-openbsd
-
-# Limpiar
-make clean
-
-# Ejecutar tests
-make test_cpu
-
-
-```
-
-
-## 📊 Pruebas de Latencia
-Meta del proyecto: **≥ 90%**
-
-```bash
-# Instalar Apache Bench
-# Dar permisos a script de instalacion (por si hay errores)
-chmod +x scripts/install_ab.sh 
-make install-bench-tools
-
-# Dar permisos a script (por si hay errores)
-chmod +x scripts/benchmark_metrics.sh
-
-# Terminal 1: Servidor corriendo
-make run
-
-# Terminal 2: Ejecutar benchmark
-make benchmark
-
-# Ver resultados
-cat benchmark_results/summary.txt
-ls -lh benchmark_results/
-```
-
-# Ejecutar TODAS las pruebas con un solo comando
-```bash
-# Dar permisos
-chmod +x scripts/run_all_tests.sh
-chmod +x scripts/test_race_conditions_integration.sh
-# Ejecutar
 make test-all
+# o
+bash scripts/run_all_tests.sh
 ```
 
-## 🐛 Troubleshooting
+### Tests de integración y carga
 
-### El servidor no inicia
+- `scripts/test_cpu_bound_auto.sh` - ejecuta pruebas CPU-bound.
+- `scripts/test_io_bound.sh` - genera archivos grandes y prueba endpoints IO-bound (`/sortfile`, `/compress`, `/hashfile`).
+- `scripts/test_race_conditions_integration.sh` - tests de concurrencia y race conditions.
+
+### Cobertura
+
+Generar cobertura con gcov (Makefile ya tiene objetivos):
 
 ```bash
-# Error: Address already in use
-# Solución: Matar proceso que usa el puerto
+make coverage
+make coverage-html
+```
+
+Los artefactos de cobertura se colocarán en `coverage/`.
+
+---
+
+## Comprobación de `progress` y `eta_ms` en Jobs
+
+1. `/jobs/submit` devuelve `job_id`.
+2. Haz polling con `/jobs/status?id=JOBID` cada segundo. Debes ver `progress` incrementando (0 → 100) y `eta_ms` decreciendo hasta 0.
+
+Si `eta_ms` queda en `-1` o `progress` permanece en 100 inmediatamente, revisa:
+
+- Que el `task` que ejecutaste reciba correctamente sus parámetros (`/jobs/submit?task=simulate&seconds=10&task=cpu`). Evita usar el mismo key `task` dos veces en el query string (p. ej. `task=simulate&task=cpu` causará conflicto).
+- Que el handler del comando invoque `job_update_progress(job_id, progress, eta_ms)` periódicamente (p.ej. `simulate.c`).
+
+---
+
+## Debugging y troubleshooting
+
+- Puerto ocupado
+
+```bash
 lsof -ti:8080 | xargs kill -9
-
-# O usar otro puerto
-./build/http_server 8081
 ```
 
-### Tests fallan
+- Logs del servidor
+
+El servidor imprime logs en stderr; si lo ejecutas desde systemd/container redirige la salida a archivo.
+
+- Tests fallan
+
+Recompila y ejecuta el test problemático en modo verbose. Usa Valgrind si sospechas fugas de memoria.
 
 ```bash
-# Ver detalles del error
-./build/test_http_parser
-
-# Ejecutar con valgrind (memory leaks)
-valgrind --leak-check=full ./build/test_http_parser
-```
-
-### No se puede compilar
-
-```bash
-# Limpiar y recompilar
 make clean
 make server
-
-# Ver errores detallados
-make server 2>&1 | less
+./build/test_job_manager
+valgrind --leak-check=full ./build/test_job_manager
 ```
-
-## 📖 Características Implementadas (Fase 3)
-
-### ✅ Cola Thread-Safe
-- FIFO con mutex + condition variables
-- Backpressure (rechaza si está llena)
-- Timeouts configurables
-- Graceful shutdown
-- Métricas (encolado/desencolado/rechazado)
-
-### ✅ Parser HTTP/1.0
-- Parsea request line (método, path, query, versión)
-- Parsea headers (Host, Content-Length, Connection)
-- Separa path y query string
-- Validación de paths seguros (no permite ../)
-
-### ✅ Servidor TCP
-- Accept loop con threads por conexión
-- Timeout en lectura de requests
-- Graceful shutdown (SIGINT, SIGTERM)
-- Estadísticas (conexiones, bytes, uptime)
-- Logging estructurado
-
-### ✅ Response Builder
-- Construye responses HTTP/1.0 correctas
-- Headers automáticos (Content-Length, X-Request-Id, etc.)
-- Soporte para JSON
-- Manejo de errores (400, 404, 500, 503)
-
-## 📝 Notas de Implementación
-
-### Concurrencia
-- **1 thread por conexión** (pthread_create + detached)
-- **No bloquea el accept loop**
-- **Thread-safe** en estadísticas (mutex)
-
-### HTTP/1.0
-- **Connection: close** por defecto
-- **No keep-alive** (simplifica implementación)
-- **Máximo 8KB** por request
-
-### Logging
-- **Thread-safe** con mutex
-- **Timestamps automáticos**
-- **Niveles**: DEBUG, INFO, WARN, ERROR
-- **Salida**: stderr o archivo
-
-## 🧪 Tests Implementados
-
-### Queue (test_queue.c)
-- ✅ Crear y destruir cola
-- ✅ Encolar y desencolar tareas
-- ✅ Backpressure (cola llena)
-- ✅ Timeout en enqueue/dequeue
-- ✅ Shutdown graceful
-- ✅ Múltiples productores concurrentes
-- ✅ Productores y consumidores concurrentes
-- ✅ Test de stress (10 prod + 10 cons, 500 tareas)
-
-### String Utils (test_string_utils.c)
-- ✅ URL decode (%20, +, caracteres especiales)
-- ✅ Trim whitespace
-- ✅ Split strings
-- ✅ Parse query strings
-- ✅ Obtener parámetros como int/long
-
-
-## 🐛 Debugging
-
-### Si los tests fallan:
-
-```bash
-# Ver detalles de errores
-./build/test_queue
-
-# Ejecutar con valgrind (memory leaks)
-valgrind --leak-check=full ./build/test_queue
-
-# Ver archivos de cobertura
-make coverage
-cat queue.c.gcov
-```
-
-### Errores comunes:
-
-**Error: `pthread_create` undefined**
-```bash
-# Asegúrate de compilar con -lpthread
-gcc ... -lpthread
-```
-
-**Error: `clock_gettime` undefined**
-```bash
-# Asegúrate de compilar con -lrt (algunas distribuciones)
-gcc ... -lrt
-```
-
-
-
-## 📝 Notas de Implementación
-
-### Queue Thread-Safe
-
-La cola implementa:
-- **FIFO** (First In, First Out)
-- **Backpressure**: Rechaza tareas si está llena
-- **Timeouts**: Espera configurable en enqueue/dequeue
-- **Graceful shutdown**: Señaliza a workers que terminen
-- **Métricas**: Cuenta tareas encoladas/desencoladas/rechazadas
-
-Primitivas de sincronización:
-- `pthread_mutex_t`: Protege estructura
-- `pthread_cond_t not_empty`: Señal para consumidores
-- `pthread_cond_t not_full`: Señal para productores
-
-### String Utils
-
-Parser de query strings HTTP:
-```c
-// Entrada: "n=97&max=100&text=hello+world"
-query_params_t *params = parse_query_string(query);
-
-int n = get_query_param_int(params, "n", -1);        // 97
-const char *text = get_query_param(params, "text");  // "hello world"
-
-free_query_params(params);
-```
-

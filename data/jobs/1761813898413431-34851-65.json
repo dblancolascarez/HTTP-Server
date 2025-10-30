@@ -1,0 +1,10 @@
+{
+  "job_id": "1761813898413431-34851-65",
+  "task_name": "hashfile",
+  "status": 2,
+  "progress": 100,
+  "eta_ms": -1,
+  "payload": {"task":"hashfile","name":"data_50mb.txt","algo":"sha256"},
+  "result": {"success":true,"file":"data_50mb.txt","algo":"sha256","hash":"35408a686f420c710d37012ccc5dd6b35764f614d3f0c622276f8e939631ea5f","size":70824872,"elapsed_ms":49},
+  "created_at": 1761813898
+}
