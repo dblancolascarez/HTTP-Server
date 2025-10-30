@@ -9,20 +9,24 @@
 // /compress?name=FILE&codec=gzip|xz
 //-----------------------------------------------------
 char* handle_compress(const char *filename, const char *codec) {
+    char filepath[512];
     char outname[512];
-
+    
+    // Construir rutas completas
+    snprintf(filepath, sizeof(filepath), "files/%s", filename);
+    
     // Construye nombre de salida (.gz o .xz)
     if (strcmp(codec, "gzip") == 0)
-        snprintf(outname, sizeof(outname), "%s.gz", filename);
+        snprintf(outname, sizeof(outname), "files/%s.gz", filename);
     else
-        snprintf(outname, sizeof(outname), "%s.xz", filename);
+        snprintf(outname, sizeof(outname), "files/%s.xz", filename);
 
     // Comando del sistema (usa gzip o xz)
     char command[1024];
     snprintf(command, sizeof(command),
              "%s -c \"%s\" > \"%s\"",
              strcmp(codec, "gzip") == 0 ? "gzip" : "xz",
-             filename, outname);
+             filepath, outname);
 
     // Medir tiempo
     clock_t start = clock();

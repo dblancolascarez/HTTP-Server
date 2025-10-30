@@ -159,6 +159,12 @@ else
         "Tests de comandos CPU-bound" \
         "./scripts/test_cpu_bound_auto.sh" \
         false
+
+    # Tests de IO-bound
+    run_test_phase \
+        "Tests de comandos IO-bound (sortfile/compress/hashfile)" \
+        "./scripts/test_io_bound.sh" \
+        false
     
     # Benchmark y métricas
     run_test_phase \
