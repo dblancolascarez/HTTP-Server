@@ -156,72 +156,7 @@ make coverage
 make clean
 ```
 
-### Salida de Tests
 
-```
-╔════════════════════════════════════════╗
-║   HTTP SERVER - UNIT TESTS            ║
-║   Phase 3: Queue + Utils + HTTP       ║
-╚════════════════════════════════════════╝
-
-📦 Test Suite: String Utils
-==========================================
-  Running: test_url_decode_simple ... ✅ PASS
-  Running: test_parse_query_simple ... ✅ PASS
-  ...
-
-📦 Test Suite: Queue (Thread-Safe)
-==========================================
-  Running: test_enqueue_dequeue_single ... ✅ PASS
-  Running: test_concurrent_producer_consumer ... ✅ PASS
-  ...
-
-📦 Test Suite: HTTP Parser
-==========================================
-  Running: test_parse_simple_get ... ✅ PASS
-  Running: test_parse_with_headers ... ✅ PASS
-  ...
-
-📊 TEST SUMMARY
-==========================================
-Total Assertions: 142
-✅ Passed: 142
-❌ Failed: 0
-Pass Rate: 100.00%
-🎉 ALL TESTS PASSED!
-```
-
-## 📁 Estructura Actual del Proyecto
-
-```
-http-server/
-├── src/
-│   ├── main.c               ✅ Punto de entrada
-│   ├── core/
-│   │   ├── queue.h          ✅ Cola thread-safe
-│   │   └── queue.c          ✅ Implementación
-│   ├── server/
-│   │   ├── http.h           ✅ Protocolo HTTP
-│   │   ├── http.c           ✅ Parser + Response
-│   │   ├── server.h         ✅ Servidor TCP
-│   │   └── server.c         ✅ Accept loop
-│   └── utils/
-│       ├── utils.h          ✅ Header único
-│       ├── logger.c         ✅ Logging
-│       ├── string_utils.c   ✅ Query parsing
-│       ├── timer.c          ✅ Medición de tiempo
-│       └── uuid.c           ✅ Request IDs
-├── tests/
-│   ├── test_utils.h         ✅ Framework
-│   ├── test_queue.c         ✅ Tests (18)
-│   ├── test_string_utils.c  ✅ Tests (28)
-│   ├── test_http_parser.c   ✅ Tests (30)
-│   └── test_main.c          ✅ Runner
-├── scripts/
-│   └── test_server.sh       ✅ Tests con curl
-├── Makefile                 ✅ Build system
-└── README.md                ✅ Este archivo
-```
 
 ## 🔧 Pruebas Manuales con curl
 
@@ -263,41 +198,32 @@ chmod +x scripts/test_server.sh
 Meta del proyecto: **≥ 90%**
 
 ```bash
+# Limpiar
+make clean
+
+# Ejecutar tests
+make test
+
+# Generar cobertura
 make coverage
 ```
 
-Salida esperada:
+## 📊 Pruebas de Rendimiento
+Meta del proyecto: **≥ 90%**
+
+```bash
+#1. El servidor debe estar corriendo
+#2. Instalar lo siguiente en terminal
+apt-get update && apt-get install -y netcat-openbsd
+
+# Limpiar
+make clean
+
+# Ejecutar tests
+make test_cpu
+
+
 ```
-Generando Reporte de Cobertura
-==========================================
-
-Archivos de cobertura:
-  ✅ queue.c: 94%
-  ✅ string_utils.c: 96%
-  ✅ http.c: 91%
-  ✅ server.c: 88%
-  ✅ logger.c: 88%
-  ✅ timer.c: 100%
-  ✅ uuid.c: 100%
-```
-
-## 🎯 Próximos Pasos
-
-### Fase 4: Router y Comandos Básicos (Siguiente)
-- [ ] `src/router/router.h`
-- [ ] `src/router/router.c`
-- [ ] `src/commands/basic_commands.c` (fibonacci, reverse, toupper, etc.)
-- [ ] `tests/test_router.c`
-
-### Fase 5: Worker Pool
-- [ ] `src/core/worker_pool.h`
-- [ ] `src/core/worker_pool.c`
-- [ ] Integración router → queue → workers
-
-### Fase 6: Comandos CPU/IO-bound
-- [ ] `src/commands/cpu_bound/isprime.c`
-- [ ] `src/commands/io_bound/sortfile.c`
-- [ ] etc.
 
 ## 🐛 Troubleshooting
 
@@ -379,27 +305,6 @@ make server 2>&1 | less
 - **Niveles**: DEBUG, INFO, WARN, ERROR
 - **Salida**: stderr o archivo
 
-## 🤝 Créditos
-
-Proyecto académico - ITCR 2025  
-Curso: Principios de Sistemas Operativos/
-│   │   ├── queue.h          ✅ Implementado
-│   │   └── queue.c          ✅ Implementado
-│   └── utils/
-│       ├── utils.h          ✅ Implementado
-│       ├── logger.c         ✅ Implementado
-│       ├── string_utils.c   ✅ Implementado
-│       ├── timer.c          ✅ Implementado
-│       └── uuid.c           ✅ Implementado
-├── tests/
-│   ├── test_utils.h         ✅ Implementado
-│   ├── test_queue.c         ✅ Implementado
-│   ├── test_string_utils.c  ✅ Implementado
-│   └── test_main.c          ✅ Implementado
-├── Makefile                 ✅ Implementado
-└── README.md                ✅ Este archivo
-```
-
 ## 🧪 Tests Implementados
 
 ### Queue (test_queue.c)
@@ -419,23 +324,6 @@ Curso: Principios de Sistemas Operativos/
 - ✅ Parse query strings
 - ✅ Obtener parámetros como int/long
 
-## 🎯 Próximos Pasos
-
-### Fase 2: Worker Pool
-- [ ] `src/core/worker_pool.h`
-- [ ] `src/core/worker_pool.c`
-- [ ] `tests/test_worker_pool.c`
-
-### Fase 3: HTTP Server Base
-- [ ] `src/server/http.h`
-- [ ] `src/server/http.c`
-- [ ] `src/server/server.h`
-- [ ] `src/server/server.c`
-
-### Fase 4: Router y Comandos
-- [ ] `src/router/router.c`
-- [ ] `src/commands/basic_commands.c`
-- [ ] `src/commands/cpu_bound/isprime.c`
 
 ## 🐛 Debugging
 
@@ -467,26 +355,7 @@ gcc ... -lpthread
 gcc ... -lrt
 ```
 
-## 📈 Cobertura de Código
 
-Meta del proyecto: **≥ 90%**
-
-```bash
-make coverage
-```
-
-Ejemplo de salida:
-```
-Generando Reporte de Cobertura
-==========================================
-
-Archivos de cobertura:
-  ✅ queue.c: 94%
-  ✅ string_utils.c: 92%
-  ✅ logger.c: 88%
-  ✅ timer.c: 100%
-  ✅ uuid.c: 100%
-```
 
 ## 📝 Notas de Implementación
 
@@ -517,10 +386,3 @@ const char *text = get_query_param(params, "text");  // "hello world"
 free_query_params(params);
 ```
 
-## 🤝 Contribución
-
-Este es un proyecto académico individual. No se aceptan pull requests.
-
-## 📄 Licencia
-
-Proyecto educativo - ITCR 2025

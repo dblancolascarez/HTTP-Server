@@ -1,0 +1,9 @@
+{
+  "job_id": "1761794250979944-39729-1",
+  "task_name": "dummy",
+  "status": 2,
+  "progress": 100,
+  "eta_ms": -1,
+  "result": {"result":123},
+  "created_at": 1761794250
+}

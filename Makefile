@@ -295,113 +295,35 @@ test: test_string test_queue test_worker_pool test_job_manager test_http test_me
 # ============================================================================
 
 coverage: test
+	@bash scripts/coverage.sh
+
+coverage-html: test
+	@bash scripts/coverage_html.sh
+
+clean-coverage:
+	@echo "Limpiando archivos de cobertura..."
+	@rm -rf coverage/
+	@rm -f *.gcda *.gcno *.gcov
+	@echo "$(GREEN)✅ Archivos de cobertura eliminados$(NC)"
+
+# ============================================================================
+# PRUEBAS DE CARGA
+# ============================================================================
+
+test_cpu: server
 	@echo ""
-	@echo "=========================================="
-	@echo "  Generando Reporte de Cobertura"
-	@echo "=========================================="
+	@echo "$(BLUE)=========================================$(NC)"
+	@echo "$(BLUE)  Pruebas de CPU-Bound$(NC)"
+	@echo "$(BLUE)=========================================$(NC)"
 	@echo ""
-	
-	# Limpiar archivos .gcov antiguos
-	@rm -f *.gcov 2>/dev/null || true
-	
-	# Generar archivos .gcov usando gcov desde el directorio raíz
-	@echo "Generando archivos de cobertura..."
-	@gcov -r $(UTILS_SRC) > /dev/null 2>&1 || true
-	@gcov -r $(CORE_SRC) > /dev/null 2>&1 || true
-	@gcov -r $(SERVER_SRC) > /dev/null 2>&1 || true
-	@gcov -r $(SRC_DIR)/router/*.c > /dev/null 2>&1 || true
-	
+	@echo "Asegúrate de que el servidor esté corriendo:"
+	@echo "  Terminal 1: make run"
+	@echo "  Terminal 2: make test_cpu"
 	@echo ""
-	@echo "╔════════════════════════════════════════════════════════╗"
-	@echo "║          REPORTE DE COBERTURA POR MÓDULO              ║"
-	@echo "╚════════════════════════════════════════════════════════╝"
-	@echo ""
-	
-	# Mostrar cobertura de utils
-	@echo "$(BLUE)═══ Utils ═══$(NC)"
-	@for file in $(UTILS_SRC); do \
-		base=$$(basename $$file .c); \
-		if [ -f $$base.c.gcov ]; then \
-			total=$$(grep -cE "^ +[0-9#]+" $$base.c.gcov 2>/dev/null || echo 1); \
-			covered=$$(grep -cE "^ +[1-9][0-9]*:" $$base.c.gcov 2>/dev/null || echo 0); \
-			if [ $$total -gt 0 ]; then \
-				percent=$$((covered * 100 / total)); \
-				if [ $$percent -ge 90 ]; then \
-					printf "  $(GREEN)✅ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				elif [ $$percent -ge 70 ]; then \
-					printf "  ⚠️  %-30s %3d%%\n" "$$base.c" $$percent; \
-				elif [ $$percent -ge 50 ]; then \
-					printf "  $(BLUE)📊 %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				else \
-					printf "  $(RED)❌ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				fi; \
-			fi; \
-		else \
-			printf "  ⚪ %-30s  N/A\n" "$$base.c"; \
-		fi; \
-	done
-	
-	# Mostrar cobertura de core
-	@echo ""
-	@echo "$(BLUE)═══ Core ═══$(NC)"
-	@for file in $(CORE_SRC); do \
-		base=$$(basename $$file .c); \
-		if [ -f $$base.c.gcov ]; then \
-			total=$$(grep -cE "^ +[0-9#]+" $$base.c.gcov 2>/dev/null || echo 1); \
-			covered=$$(grep -cE "^ +[1-9][0-9]*:" $$base.c.gcov 2>/dev/null || echo 0); \
-			if [ $$total -gt 0 ]; then \
-				percent=$$((covered * 100 / total)); \
-				if [ $$percent -ge 90 ]; then \
-					printf "  $(GREEN)✅ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				elif [ $$percent -ge 70 ]; then \
-					printf "  ⚠️  %-30s %3d%%\n" "$$base.c" $$percent; \
-				elif [ $$percent -ge 50 ]; then \
-					printf "  $(BLUE)📊 %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				else \
-					printf "  $(RED)❌ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				fi; \
-			fi; \
-		else \
-			printf "  ⚪ %-30s  N/A\n" "$$base.c"; \
-		fi; \
-	done
-	
-	# Mostrar cobertura de server
-	@echo ""
-	@echo "$(BLUE)═══ Server ═══$(NC)"
-	@for file in $(SERVER_SRC); do \
-		base=$$(basename $$file .c); \
-		if [ -f $$base.c.gcov ]; then \
-			total=$$(grep -cE "^ +[0-9#]+" $$base.c.gcov 2>/dev/null || echo 1); \
-			covered=$$(grep -cE "^ +[1-9][0-9]*:" $$base.c.gcov 2>/dev/null || echo 0); \
-			if [ $$total -gt 0 ]; then \
-				percent=$$((covered * 100 / total)); \
-				if [ $$percent -ge 90 ]; then \
-					printf "  $(GREEN)✅ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				elif [ $$percent -ge 70 ]; then \
-					printf "  ⚠️  %-30s %3d%%\n" "$$base.c" $$percent; \
-				elif [ $$percent -ge 50 ]; then \
-					printf "  $(BLUE)📊 %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				else \
-					printf "  $(RED)❌ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
-				fi; \
-			fi; \
-		else \
-			printf "  ⚪ %-30s  N/A\n" "$$base.c"; \
-		fi; \
-	done
-	
-	@echo ""
-	@echo "Leyenda:"
-	@echo "  $(GREEN)✅ 90-100%$(NC) - Excelente cobertura"
-	@echo "  ⚠️  70-89%  - Buena cobertura"
-	@echo "  $(BLUE)📊 50-69%$(NC)  - Cobertura media"
-	@echo "  $(RED)❌ 0-49%$(NC)   - Cobertura baja"
-	@echo "  ⚪ N/A      - Sin datos de cobertura"
-	@echo ""
-	@echo "Archivos .gcov generados: $$(ls -1 *.c.gcov 2>/dev/null | wc -l)"
-	@echo "Ver detalles: cat <archivo>.c.gcov"
-	@echo ""
+	@bash scripts/test_cpu_bound_auto.sh
+
+.PHONY: test_cpu
+
 
 
 # ============================================================================
@@ -411,8 +333,9 @@ coverage: test
 clean:
 	@echo "Limpiando archivos compilados..."
 	@rm -rf $(BUILD_DIR)/*
+	@rm -rf coverage/
 	@rm -f *.gcda *.gcno *.gcov
-	@rm -f $(SRC_DIR)/**/*.gcda $(SRC_DIR)/**/*.gcno
+#	@rm -f $(SRC_DIR)/**/*.gcda $(SRC_DIR)/**/*.gcno
 	@echo "$(GREEN)✅ Limpieza completada$(NC)"
 
 # ============================================================================
