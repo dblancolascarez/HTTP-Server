@@ -1,0 +1,10 @@
+{
+  "job_id": "1761802398126753-3042-103",
+  "task_name": "compress",
+  "status": 2,
+  "progress": 100,
+  "eta_ms": -1,
+  "payload": {"task":"compress","name":"data_50mb.txt","codec":"gzip"},
+  "result": {"file":"data_50mb.txt","codec":"gzip","output":"files/data_50mb.txt.gz","size_bytes":53822506,"elapsed_ms":0.39},
+  "created_at": 1761802398
+}
