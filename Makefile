@@ -295,7 +295,6 @@ test: test_string test_queue test_worker_pool test_job_manager test_http test_me
 # ============================================================================
 
 coverage: test
-	@bash scripts/coverage.sh
 	@echo ""
 	@echo "=========================================="
 	@echo "  Generando Reporte de Cobertura"
@@ -305,16 +304,12 @@ coverage: test
 	# Limpiar archivos .gcov antiguos
 	@rm -f *.gcov 2>/dev/null || true
 	
-	# Copiar archivos .gcda del build al directorio de fuentes
-	@echo "Preparando archivos de cobertura..."
-	@find $(BUILD_DIR) -name "*.gcda" -exec cp {} . \; 2>/dev/null || true
-	@find $(BUILD_DIR) -name "*.gcno" -exec cp {} . \; 2>/dev/null || true
-	
-	# Generar archivos .gcov
-	@echo "Generando reportes de cobertura..."
-	@for src in $(UTILS_SRC) $(CORE_SRC) $(SERVER_SRC); do \
-		gcov -o . $$src > /dev/null 2>&1 || true; \
-	done
+	# Generar archivos .gcov usando gcov desde el directorio raíz
+	@echo "Generando archivos de cobertura..."
+	@gcov -r $(UTILS_SRC) > /dev/null 2>&1 || true
+	@gcov -r $(CORE_SRC) > /dev/null 2>&1 || true
+	@gcov -r $(SERVER_SRC) > /dev/null 2>&1 || true
+	@gcov -r $(SRC_DIR)/router/*.c > /dev/null 2>&1 || true
 	
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════╗"
@@ -326,21 +321,19 @@ coverage: test
 	@echo "$(BLUE)═══ Utils ═══$(NC)"
 	@for file in $(UTILS_SRC); do \
 		base=$$(basename $$file .c); \
-		gcov_file=$$(ls -1 $$base.c.gcov 2>/dev/null | head -1); \
-		if [ -n "$$gcov_file" ] && [ -f "$$gcov_file" ]; then \
-			total=$$(grep -cE "^[ ]*[0-9#-]+:" $$gcov_file 2>/dev/null || echo 1); \
-			covered=$$(grep -cE "^[ ]*[1-9][0-9]*:" $$gcov_file 2>/dev/null || echo 0); \
-			uncovered=$$(grep -cE "^[ ]*#+:" $$gcov_file 2>/dev/null || echo 0); \
+		if [ -f $$base.c.gcov ]; then \
+			total=$$(grep -cE "^ +[0-9#]+" $$base.c.gcov 2>/dev/null || echo 1); \
+			covered=$$(grep -cE "^ +[1-9][0-9]*:" $$base.c.gcov 2>/dev/null || echo 0); \
 			if [ $$total -gt 0 ]; then \
-				percent=$$((covered * 100 / (covered + uncovered))); \
+				percent=$$((covered * 100 / total)); \
 				if [ $$percent -ge 90 ]; then \
-					printf "  $(GREEN)✅ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(GREEN)✅ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				elif [ $$percent -ge 70 ]; then \
-					printf "  ⚠️  %-30s %3d%% (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  ⚠️  %-30s %3d%%\n" "$$base.c" $$percent; \
 				elif [ $$percent -ge 50 ]; then \
-					printf "  $(BLUE)📊 %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(BLUE)📊 %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				else \
-					printf "  $(RED)❌ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(RED)❌ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				fi; \
 			fi; \
 		else \
@@ -353,21 +346,19 @@ coverage: test
 	@echo "$(BLUE)═══ Core ═══$(NC)"
 	@for file in $(CORE_SRC); do \
 		base=$$(basename $$file .c); \
-		gcov_file=$$(ls -1 $$base.c.gcov 2>/dev/null | head -1); \
-		if [ -n "$$gcov_file" ] && [ -f "$$gcov_file" ]; then \
-			total=$$(grep -cE "^[ ]*[0-9#-]+:" $$gcov_file 2>/dev/null || echo 1); \
-			covered=$$(grep -cE "^[ ]*[1-9][0-9]*:" $$gcov_file 2>/dev/null || echo 0); \
-			uncovered=$$(grep -cE "^[ ]*#+:" $$gcov_file 2>/dev/null || echo 0); \
+		if [ -f $$base.c.gcov ]; then \
+			total=$$(grep -cE "^ +[0-9#]+" $$base.c.gcov 2>/dev/null || echo 1); \
+			covered=$$(grep -cE "^ +[1-9][0-9]*:" $$base.c.gcov 2>/dev/null || echo 0); \
 			if [ $$total -gt 0 ]; then \
-				percent=$$((covered * 100 / (covered + uncovered))); \
+				percent=$$((covered * 100 / total)); \
 				if [ $$percent -ge 90 ]; then \
-					printf "  $(GREEN)✅ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(GREEN)✅ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				elif [ $$percent -ge 70 ]; then \
-					printf "  ⚠️  %-30s %3d%% (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  ⚠️  %-30s %3d%%\n" "$$base.c" $$percent; \
 				elif [ $$percent -ge 50 ]; then \
-					printf "  $(BLUE)📊 %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(BLUE)📊 %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				else \
-					printf "  $(RED)❌ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(RED)❌ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				fi; \
 			fi; \
 		else \
@@ -380,21 +371,19 @@ coverage: test
 	@echo "$(BLUE)═══ Server ═══$(NC)"
 	@for file in $(SERVER_SRC); do \
 		base=$$(basename $$file .c); \
-		gcov_file=$$(ls -1 $$base.c.gcov 2>/dev/null | head -1); \
-		if [ -n "$$gcov_file" ] && [ -f "$$gcov_file" ]; then \
-			total=$$(grep -cE "^[ ]*[0-9#-]+:" $$gcov_file 2>/dev/null || echo 1); \
-			covered=$$(grep -cE "^[ ]*[1-9][0-9]*:" $$gcov_file 2>/dev/null || echo 0); \
-			uncovered=$$(grep -cE "^[ ]*#+:" $$gcov_file 2>/dev/null || echo 0); \
+		if [ -f $$base.c.gcov ]; then \
+			total=$$(grep -cE "^ +[0-9#]+" $$base.c.gcov 2>/dev/null || echo 1); \
+			covered=$$(grep -cE "^ +[1-9][0-9]*:" $$base.c.gcov 2>/dev/null || echo 0); \
 			if [ $$total -gt 0 ]; then \
-				percent=$$((covered * 100 / (covered + uncovered))); \
+				percent=$$((covered * 100 / total)); \
 				if [ $$percent -ge 90 ]; then \
-					printf "  $(GREEN)✅ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(GREEN)✅ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				elif [ $$percent -ge 70 ]; then \
-					printf "  ⚠️  %-30s %3d%% (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  ⚠️  %-30s %3d%%\n" "$$base.c" $$percent; \
 				elif [ $$percent -ge 50 ]; then \
-					printf "  $(BLUE)📊 %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(BLUE)📊 %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				else \
-					printf "  $(RED)❌ %-30s %3d%%$(NC) (%d/%d lines)\n" "$$base.c" $$percent $$covered $$((covered + uncovered)); \
+					printf "  $(RED)❌ %-30s %3d%%$(NC)\n" "$$base.c" $$percent; \
 				fi; \
 			fi; \
 		else \
@@ -410,8 +399,7 @@ coverage: test
 	@echo "  $(RED)❌ 0-49%$(NC)   - Cobertura baja"
 	@echo "  ⚪ N/A      - Sin datos de cobertura"
 	@echo ""
-	@total_gcov=$$(ls -1 *.c.gcov 2>/dev/null | wc -l); \
-	echo "Archivos .gcov generados: $$total_gcov"
+	@echo "Archivos .gcov generados: $$(ls -1 *.c.gcov 2>/dev/null | wc -l)"
 	@echo "Ver detalles: cat <archivo>.c.gcov"
 	@echo ""
 
