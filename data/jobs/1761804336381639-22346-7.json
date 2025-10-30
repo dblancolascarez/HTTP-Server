@@ -1,0 +1,10 @@
+{
+  "job_id": "1761804336381639-22346-7",
+  "task_name": "simulate",
+  "status": 2,
+  "progress": 100,
+  "eta_ms": -1,
+  "payload": {"task":"simulate","seconds":"600"},
+  "result": {"error":"Invalid task parameter. Must be 'cpu' or 'io'."},
+  "created_at": 1761804336
+}
