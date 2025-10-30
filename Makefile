@@ -324,6 +324,27 @@ test_cpu: server
 
 .PHONY: test_cpu
 
+# ============================================================================
+# BENCHMARKING Y METRICAS
+# ============================================================================
+
+benchmark: server
+	@echo ""
+	@echo "$(BLUE)=========================================$(NC)"
+	@echo "$(BLUE)  Benchmark de Metricas$(NC)"
+	@echo "$(BLUE)=========================================$(NC)"
+	@echo ""
+	@bash scripts/benchmark_metrics.sh
+
+install-bench-tools:
+	@echo "Instalando herramientas de benchmark..."
+	@apt-get update
+	@apt-get install -y apache2-utils bc wrk
+	@echo "$(GREEN)✓ Herramientas instaladas$(NC)"
+
+.PHONY: benchmark install-bench-tools
+
+
 
 
 # ============================================================================

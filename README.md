@@ -225,6 +225,30 @@ make test_cpu
 
 ```
 
+
+## 📊 Pruebas de Latencia
+Meta del proyecto: **≥ 90%**
+
+```bash
+# Instalar Apache Bench
+# Dar permisos a script de instalacion (por si hay errores)
+chmod +x scripts/install_ab.sh 
+make install-bench-tools
+
+# Dar permisos a script (por si hay errores)
+chmod +x scripts/benchmark_metrics.sh
+
+# Terminal 1: Servidor corriendo
+make run
+
+# Terminal 2: Ejecutar benchmark
+make benchmark
+
+# Ver resultados
+cat benchmark_results/summary.txt
+ls -lh benchmark_results/
+```
+
 ## 🐛 Troubleshooting
 
 ### El servidor no inicia
