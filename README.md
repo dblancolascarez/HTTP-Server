@@ -1,3 +1,7 @@
+[![Ver video en YouTube](https://img.youtube.com/vi/cECXk18jrXY/0.jpg)](https://youtu.be/cECXk18jrXY)
+
+[Ver video en YouTube](https://youtu.be/cECXk18jrXY)
+
 # HTTP Server - Proyecto de Sistemas Operativos
 
 Servidor HTTP/1.0 implementado en C con soporte para múltiples clientes concurrentes, workers especializados por tipo de comando y un sistema de jobs asíncronos. Esta README completa describe cómo compilar y ejecutar el servidor tanto dentro de Docker como en Ubuntu/WSL, documenta todos los endpoints, muestra ejemplos reales y detalla cómo ejecutar las pruebas.
