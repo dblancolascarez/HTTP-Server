@@ -165,7 +165,7 @@ curl -s "http://localhost:8080/toupper?text=hello%20world" | jq '.'
   - Descripción: Genera n números aleatorios entre min y max.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/random?count=5&min=1&max=100" | jq '.'
+curl -s "http://localhost:8080/random?count=5&min=1&max=100"
 ```
 
 - `/timestamp`
@@ -207,7 +207,7 @@ curl -s "http://localhost:8080/loadtest?tasks=5&sleep=2" | jq '.'
   - Descripción: Muestra la lista de todos los endpoints disponibles.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/help"
+curl -s "http://localhost:8080/help" | jq "."
 ```
 
 ### 2) CPU-bound 
@@ -223,7 +223,7 @@ curl -s "http://localhost:8080/isprime?n=1000003" | jq '.'
   - Descripción: Factoriza NUM en primos. Devuelve un arreglo con los factores y sus multiplicidades: [{"prime":p, "count":k}, ...].
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/factor?n=360" | jq '.'
+curl -s "http://localhost:8080/factor?n=360"
 ```
 
 - `/pi?digits=D`
@@ -253,14 +253,16 @@ curl -s "http://localhost:8080/matrixmul?size=128&seed=42" | jq '.'
   - Descripción: Ordena un archivo en disco que contiene enteros (uno por línea). Diseñado para manejar archivos grandes (>= 50MB). Retorna HTTP 200 con métricas de tiempo y ruta al archivo ordenado.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/sortfile?name=data/numbers_50mb.txt&algo=merge" | jq '.'
+curl 'http://127.0.0.1:8080/createfile?name=numbers.txt&content=42%0A15%0A8%0A23%0A4%0A&repeat=1' | jq '.'
+curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=merge'
+curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=quick'
 ```
 
 - `/wordcount?name=FILE`
   - Descripción: Similar a wc: cuenta líneas, palabras y bytes del archivo especificado. Soporta procesamiento en streaming para archivos grandes.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/wordcount?name=data/test.txt" | jq '.'
+curl -s "http://localhost:8080/wordcount?name=data/test.txt" | jq '.' # No esta funcionando
 ```
 
 - `/grep?name=FILE&pattern=REGEX`
@@ -274,14 +276,14 @@ curl -s "http://localhost:8080/grep?name=data/test.txt&pattern=ERROR" | jq '.'
   - Descripción: Comprime el archivo indicado usando gzip o xz. Devuelve el nombre del archivo comprimido y el tamaño en bytes.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/compress?name=data/test.txt&codec=gzip" | jq '.'
+curl -s "http://localhost:8080/compress?name=data/test.txt&codec=gzip" | jq '.' # No esta funcionando
 ```
 
 - `/hashfile?name=FILE&algo=sha256`
   - Descripción: Calcula el hash del archivo y retorna el resultado en hexadecimal. Diseñado para calcular el hash en streaming para archivos grandes.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/hashfile?name=data/large_file.txt&algo=sha256" | jq '.'
+curl -s "http://localhost:8080/hashfile?name=data/large_file.txt&algo=sha256" | jq '.' # No esta funcionando
 ```
 
 ---
