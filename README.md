@@ -262,7 +262,7 @@ curl -i 'http://127.0.0.1:8080/sortfile?name=numbers.txt&algo=quick'
   - Descripción: Similar a wc: cuenta líneas, palabras y bytes del archivo especificado. Soporta procesamiento en streaming para archivos grandes.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/wordcount?name=data/test.txt" | jq '.' # No esta funcionando
+curl -s "http://localhost:8080/wordcount?name=test.txt" | jq '.' 
 ```
 
 - `/grep?name=FILE&pattern=REGEX`
@@ -276,14 +276,17 @@ curl -s "http://localhost:8080/grep?name=data/test.txt&pattern=ERROR" | jq '.'
   - Descripción: Comprime el archivo indicado usando gzip o xz. Devuelve el nombre del archivo comprimido y el tamaño en bytes.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/compress?name=data/test.txt&codec=gzip" | jq '.' # No esta funcionando
+curl -s "http://localhost:8080/compress?name=test.txt&codec=gzip" | jq '.'
+
+# O si prefieres usar xz:
+curl -s "http://localhost:8080/compress?name=test.txt&codec=xz" | jq '.'
 ```
 
 - `/hashfile?name=FILE&algo=sha256`
   - Descripción: Calcula el hash del archivo y retorna el resultado en hexadecimal. Diseñado para calcular el hash en streaming para archivos grandes.
   - Ejemplo:
 ```bash
-curl -s "http://localhost:8080/hashfile?name=data/large_file.txt&algo=sha256" | jq '.' # No esta funcionando
+curl -s "http://127.0.0.1:8080/hashfile?name=test.txt&algo=sha256" | jq '.' 
 ```
 
 ---

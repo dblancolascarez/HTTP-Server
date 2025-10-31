@@ -1,0 +1,10 @@
+{
+  "job_id": "1761873601651744-827-8",
+  "task_name": "sortfile",
+  "status": 2,
+  "progress": 100,
+  "eta_ms": -1,
+  "payload": {"task":"sortfile","name":"numbers_50mb.txt","algo":"merge"},
+  "result": {"success":true,"file":"numbers_50mb.txt","algo":"merge","sorted_file":"numbers_50mb.txt.sorted","count":52428800,"input_size":191282300,"output_size":191282300,"elapsed_ms":10671},
+  "created_at": 1761873601
+}
