@@ -1,1 +1,0 @@
-// Construcción de JSON simple
